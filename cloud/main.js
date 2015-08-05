@@ -8,7 +8,7 @@ function orderArray(array) {
     array.sort();
     
     /* This for permit to parse the array */
-    for ( var i = 0; i < array.length; i++ ) {
+    for (var i = 0; i < array.length; i++) {
         
         /* Compare if valo in array[i} is diferent to previos value save in prev
         if this don't exit create key and item but if exist only sum one more */ 
@@ -145,4 +145,12 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
         your average savings*/
         response.success(quantityAndAverage);
     });
+});
+
+
+/*This functions permit save data in Favoritos Class*/
+Parse.Cloud.define("SaveFavorite", function(request, response) {
+    var FavoriteClass = Parse.Object.extend("Favorite");
+    var FavoriteUser = new FavoriteClass();
+    response.success(quantityAndAverage);
 });
