@@ -152,5 +152,16 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
 Parse.Cloud.define("SaveFavorite", function(request, response) {
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
-    response.success(quantityAndAverage);
+    Data = request.params.Array;
+    FavoriteUser.id = "u1KyNog2qT";
+    FavoriteUser.set("UserID",Data.UserID);
+    FavoriteUser.add("CustomerID",Data.CustomerID);
+    FavoriteUser.save(null,{
+        success:function(FavoriteUser) { 
+            response.success(FavoriteUser);
+        },
+        error:function(error) {
+            response.error(error);
+        }
+    });
 });
