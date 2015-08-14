@@ -148,14 +148,33 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
 });
 
 
-/*This functions permit save data in Favoritos Class*/
-Parse.Cloud.define("SaveFavorite", function(request, response) {
+function searchUserCustomer(UserID, CustomerID, FavoriteClass){
+    return FavoriteClass;
+};
+
+function saveNewFavorite(UserID, CustomerID) {
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
-    Data = request.params.Array;
-    FavoriteUser.id = "u1KyNog2qT";
-    FavoriteUser.set("UserID",Data.UserID);
-    FavoriteUser.add("CustomerID",Data.CustomerID);
+    FavoriteUser.set("UserID",UserID);
+    FavoriteUser.add("CustomerID",CustomerID);
+    return FavoriteUser.save(null,{
+        success:function(FavoriteUser) { 
+            response.success(FavoriteUser);
+        },
+        error:function(error) {
+            response.error(error);
+        }
+    });
+};
+
+/*
+function editFavorite() {
+    var FavoriteClass = Parse.Object.extend("Favorite");
+    var FavoriteUser = new FavoriteClass();
+
+    FavoriteUser.id = "auHKwOqVkC";
+    FavoriteUser.set("UserID",UserID);
+    FavoriteUser.add("CustomerID",CustomerID);
     FavoriteUser.save(null,{
         success:function(FavoriteUser) { 
             response.success(FavoriteUser);
@@ -164,4 +183,10 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
             response.error(error);
         }
     });
+};*/
+
+/*This functions permit save data in Favoritos Class*/
+Parse.Cloud.define("SaveFavorite", function(request, response) {
+    Data = request.params.Array;
+    response.success(saveNewFavorite(Data.UserID, Data.CustomerID));
 });
