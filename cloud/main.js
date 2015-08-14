@@ -167,7 +167,7 @@ function saveNewFavorite(UserID, CustomerID) {
     });
 };
 
-/*
+
 function editFavorite() {
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
@@ -183,7 +183,7 @@ function editFavorite() {
             response.error(error);
         }
     });
-};*/
+};
 
 /*This functions permit save data in Favoritos Class*/
 Parse.Cloud.define("SaveFavorite", function(request, response) {
