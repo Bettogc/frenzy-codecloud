@@ -163,11 +163,11 @@ function saveNewFavorite(UserID, CustomerID) {
 };
 
 
-function editFavorite(UserID, CustomerID) {
+function editFavorite(FavoriteID, UserID, CustomerID) {
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
 
-    FavoriteUser.id = "vO3J3ysul7";
+    FavoriteUser.id = FavoriteID;
     FavoriteUser.set("UserID",UserID);
     FavoriteUser.add("CustomerID",CustomerID);
     FavoriteUser.save(null,{
