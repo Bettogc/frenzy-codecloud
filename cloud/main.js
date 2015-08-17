@@ -185,15 +185,19 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
     Data = request.params.Array;
     var GameScore = Parse.Object.extend("Favorite");
     var query = new Parse.Query(GameScore);
-    query.equalTo("UserID", "brandon");
+    query.equalTo("UserID", Data.UserID);
 
     query.find({
         success: function(results) {
-            response.success(results);
+            if (results.length > 0) {
+                response.success(editFavorite(results[0].id,Data.UserID,Data.CustomerID));
+            } else {
+                response.success(saveNewFavorite(Data.UserID,Data.CustomerID));
+            };
+
         },
         error: function(error) {
             response.error(error);
         }
     });
-    /*response.success(editFavorite(Data.UserID, Data.CustomerID));*/
 });
