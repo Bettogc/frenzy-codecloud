@@ -147,11 +147,6 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
     });
 });
 
-
-function searchUserCustomer(UserID, CustomerID, FavoriteClass){
-    return FavoriteClass;
-};
-
 function saveNewFavorite(UserID, CustomerID) {
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
@@ -168,11 +163,11 @@ function saveNewFavorite(UserID, CustomerID) {
 };
 
 
-function editFavorite() {
+function editFavorite(UserID, CustomerID) {
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
 
-    FavoriteUser.id = "auHKwOqVkC";
+    FavoriteUser.id = "vO3J3ysul7";
     FavoriteUser.set("UserID",UserID);
     FavoriteUser.add("CustomerID",CustomerID);
     FavoriteUser.save(null,{
@@ -188,5 +183,17 @@ function editFavorite() {
 /*This functions permit save data in Favoritos Class*/
 Parse.Cloud.define("SaveFavorite", function(request, response) {
     Data = request.params.Array;
-    response.success(saveNewFavorite(Data.UserID, Data.CustomerID));
+    var GameScore = Parse.Object.extend("Favorite");
+    var query = new Parse.Query(GameScore);
+    query.equalTo("UserID", "brandon");
+
+    query.find({
+        success: function(results) {
+            response.success(results);
+        },
+        error: function(error) {
+            response.error(error);
+        }
+    });
+    /*response.success(editFavorite(Data.UserID, Data.CustomerID));*/
 });
