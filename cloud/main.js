@@ -210,5 +210,14 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
 });
 
 Parse.Cloud.define("DeleteFavorite",function(request,response){
-    
+    var FavoriteData = Parse.Object.extend("Favorite");
+    var query = new Parse.Query(FavoriteData);
+    query.equalTo("UserID", Data.UserID);
+    query.find(
+    {
+    success: function(results) 
+    {
+        response.success(results);
+    }
+    });
 });
