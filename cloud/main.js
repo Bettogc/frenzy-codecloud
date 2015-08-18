@@ -182,16 +182,23 @@ function editFavorite(FavoriteID, UserID, CustomerID) {
 
 /*This functions permit save data in Favoritos Class*/
 Parse.Cloud.define("SaveFavorite", function(request, response) {
+    /*Data save parameters*/
     Data = request.params.Array;
-    var GameScore = Parse.Object.extend("Favorite");
-    var query = new Parse.Query(GameScore);
+
+    /*FavoriteData save all data in favorite class*/
+    var FavoriteData = Parse.Object.extend("Favorite");
+    var query = new Parse.Query(FavoriteData);
+    /*only call data to specific user*/
     query.equalTo("UserID", Data.UserID);
 
     query.find({
         success: function(results) {
+            /*if length is greater that 0 the user exist*/
             if (results.length > 0) {
+                /*Edit user*/
                 response.success(editFavorite(results[0].id,Data.UserID,Data.CustomerID));
             } else {
+                /*Save new user*/
                 response.success(saveNewFavorite(Data.UserID,Data.CustomerID));
             };
 
@@ -200,4 +207,8 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
             response.error(error);
         }
     });
+});
+
+Parse.Cloud.define("DeleteFavorite",function(request,response){
+    
 });
