@@ -182,8 +182,7 @@ function editFavorite(FavoriteID, UserID, CustomerID) {
 
 /*This functions permit save data in Favoritos Class*/
 Parse.Cloud.define("SaveFavorite", function(request, response) {
-    /*Data save parameters*/
-    Data = request.params.Array;
+    
 
     /*FavoriteData save all data in favorite class*/
     var FavoriteData = Parse.Object.extend("Favorite");
@@ -210,14 +209,20 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
 });
 
 Parse.Cloud.define("DeleteFavorite",function(request,response){
+    /*Data save parameters*/
+    Data = request.params.Array;
+
+    /*FavoriteData save all data in favorite class*/
     var FavoriteData = Parse.Object.extend("Favorite");
     var query = new Parse.Query(FavoriteData);
+
+    /*only call data to specific user*/
     query.equalTo("UserID", Data.UserID);
-    query.find(
-    {
-    success: function(results) 
-    {
-        response.success(results);
-    }
+
+    query.find({
+        success: function(results) 
+        {
+            response.success(results);
+        }
     });
 });
