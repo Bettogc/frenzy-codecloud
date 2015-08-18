@@ -222,7 +222,11 @@ Parse.Cloud.define("DeleteFavorite",function(request,response){
     query.find({
         success: function(results) 
         {
-            response.success(results.attributes.CustomerID.length);
+            for (var i = 0; i < results[0].attributes.CustomerID.length; i++) {
+                if (results[0].attributes.CustomerID == Data.CustomerID) {
+                    response.success("Encontrado");
+                }
+            };
         }
     });
 });
