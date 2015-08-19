@@ -153,8 +153,16 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
     var FavoriteUser = new FavoriteClass();
 
     if (FavoriteID === null) {
-        return "Indefinido"
-
+        FavoriteUser.set("UserID",UserID);
+        FavoriteUser.add("CustomerID",CustomerID);
+        return FavoriteUser.save(null,{
+            success:function(FavoriteUser) { 
+                response.success("Usuario Creado en Favoritos");
+            },
+            error:function(error) {
+                response.error(error);
+            }
+        });
     } else {
         return FavoriteID
     };
