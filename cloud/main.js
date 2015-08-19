@@ -154,7 +154,10 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
 
     if (FavoriteID === null) {
         return "Indefinido"
-    }
+
+    } else {
+        return FavoriteID
+    };
 }
 
 function saveNewFavorite(UserID, CustomerID) {
@@ -206,10 +209,10 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
             /*if length is greater that 0 the user exist*/
             if (results.length > 0) {
                 /*Edit user*/
-                response.success(editFavorite(results[0].id,Data.UserID,Data.CustomerID));
+                response.success(saveFavorite(results[0].id,Data.UserID,Data.CustomerID));
             } else {
                 /*Save new user*/
-                response.success(saveNewFavorite(Data.UserID,Data.CustomerID));
+                response.success(saveFavorite(null,Data.UserID,Data.CustomerID));
             };
 
         },
