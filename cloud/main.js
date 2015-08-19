@@ -147,6 +147,16 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
     });
 });
 
+
+function saveFavorite (FavoriteID, UserID, CustomerID) {
+    var FavoriteClass = Parse.Object.extend("Favorite");
+    var FavoriteUser = new FavoriteClass();
+
+    if (FavoriteID === null) {
+        return "Indefinido"
+    }
+}
+
 function saveNewFavorite(UserID, CustomerID) {
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
@@ -182,7 +192,8 @@ function editFavorite(FavoriteID, UserID, CustomerID) {
 
 /*This functions permit save data in Favoritos Class*/
 Parse.Cloud.define("SaveFavorite", function(request, response) {
-    
+    /*Data save parameters*/
+    Data = request.params.Array;
 
     /*FavoriteData save all data in favorite class*/
     var FavoriteData = Parse.Object.extend("Favorite");
@@ -219,15 +230,18 @@ Parse.Cloud.define("DeleteFavorite",function(request,response){
     /*only call data to specific user*/
     query.equalTo("UserID", Data.UserID);
 
-    query.find({
-        success: function(results) 
+    query.each(function(results) {
         {
-            for (var i = 0; i < results[0].attributes.CustomerID.length; i++) {
-                if (results[0].attributes.CustomerID[i] == Data.CustomerID) {
-                    results[0].attributes.CustomerID[i].destroy({});
+            /* This for loop is to iterate inside of customerID array */
+            for(var i = 0; i < results.attributes.CustomerID.length; i++){
+                /* If item in array is equal to send for user is deleted */
+                if (results.attributes.CustomerID[i] == Data.CustomerID) {
+                    results.attributes.CustomerID.splice(i,1);
+                    /* Save data en Data base of parse */
+                    results.save();
                 }
             };
-            response.success("Favorito Eliminado");
+            response.success("Favorite Removed");
         }
     });
 });
