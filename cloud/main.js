@@ -169,7 +169,7 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
         FavoriteUser.add("CustomerID",CustomerID);
         FavoriteUser.save(null,{
             success:function(FavoriteUser) { 
-                response.success(FavoriteUser);
+                response.success("Se agrego favorito a usuario");
             },
             error:function(error) {
                 response.error(error);
