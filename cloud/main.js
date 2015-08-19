@@ -164,7 +164,17 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
             }
         });
     } else {
-        return FavoriteID
+        FavoriteUser.id = FavoriteID;
+        FavoriteUser.set("UserID",UserID);
+        FavoriteUser.add("CustomerID",CustomerID);
+        FavoriteUser.save(null,{
+            success:function(FavoriteUser) { 
+                response.success(FavoriteUser);
+            },
+            error:function(error) {
+                response.error(error);
+            }
+        });
     };
 }
 
