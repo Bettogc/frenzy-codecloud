@@ -183,7 +183,7 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
 
 /*This functions permit save data in Favoritos Class*/
 Parse.Cloud.define("SaveFavorite", function(request, response) {
-    /*Data save parameters*/
+    /*Variable to save parameters*/
     Data = request.params.Array;
 
     /*FavoriteData save all data in favorite class*/
@@ -211,7 +211,7 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
 });
 
 Parse.Cloud.define("DeleteFavorite",function(request,response){
-    /*Data save parameters*/
+    /*Variable to save parameters*/
     Data = request.params.Array;
 
     /*FavoriteData save all data in favorite class*/
@@ -233,6 +233,27 @@ Parse.Cloud.define("DeleteFavorite",function(request,response){
                 }
             };
             response.success("Favorite Removed");
+        }
+    });
+});
+
+/*This functions permit save data in Promotion Class*/
+Parse.Cloud.define("SavePromotion", function(request, response) {
+    /*Variable to save parameters*/
+    Data = request.params.Array;
+
+    /*promotionSavedData save all data in PromotionSaved class*/
+    var promotionSavedData = Parse.Object.extend("Favorite");
+    var query = new Parse.Query(promotionSavedData);
+    /*only call data to specific user*/
+    query.equalTo("UserID", Data.UserID);
+
+    query.find({
+        success: function(results) {
+            response.success(results);
+        },
+        error: function(error) {
+            response.error(error);
         }
     });
 });
