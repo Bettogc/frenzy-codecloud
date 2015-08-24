@@ -159,7 +159,7 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
         FavoriteUser.add("CustomerID",CustomerID);
         return FavoriteUser.save(null,{
             success:function(FavoriteUser) { 
-                response.success("Usuario Creado en Favoritos");
+                response.success("User created in favorites and favorite added.");
             },
             error:function(error) {
                 response.error(error);
@@ -172,7 +172,7 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
         FavoriteUser.add("CustomerID",CustomerID);
         FavoriteUser.save(null,{
             success:function(FavoriteUser) { 
-                response.success("Se agrego favorito a usuario");
+                response.success("Favorite added to user.");
             },
             error:function(error) {
                 response.error(error);
