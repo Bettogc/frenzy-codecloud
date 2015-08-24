@@ -237,7 +237,7 @@ Parse.Cloud.define("DeleteFavorite",function(request,response){
     });
 });
 
-function savePromotion (FavoriteID, UserID, CustomerID) {
+function savePromotion (FavoriteID, UserID, PromotionID) {
     /* Create connection to PromotionSaved class in parse */
     var FavoriteClass = Parse.Object.extend("PromotionSaved");
     var FavoriteUser = new FavoriteClass();
