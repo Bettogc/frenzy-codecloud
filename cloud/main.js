@@ -38,7 +38,7 @@ Parse.Cloud.define("GetPromotions", function(request, response) {
     promotion.find().then(function(results) {
         for (x in results) {
             /* clientList save the list of customers for each promotions in an array */
-            var clientList = results[x].attributes.customer;
+            var clientList = results[x].attributes.Customer;
             customerQuantityPromotions.push(clientList);
         };
         
@@ -96,8 +96,8 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
         for (i in quantityAndAverage.Quantities[0]) {
             /* Iterates in Promotions table */
             for (x in results) {
-                /* Save the list of costomer for each promotion */
-                var customerList = results[x].attributes.customer
+                /* Save the list of customer for each promotion */
+                var customerList = results[x].attributes.Customer
                 /* Verify if customer exist inside of customerList */
                 if(customerList.indexOf(i)!= -1) {
                     var basePrice = results[x].attributes.BasePrice;
