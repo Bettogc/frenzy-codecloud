@@ -316,7 +316,7 @@ Parse.Cloud.define("DeletePromotion",function(request,response){
             /* This for loop is to iterate inside of promotionID array */
             for(var i = 0; i < results.attributes.PromotionID.length; i++){
                 /* If item in array is equal to send for user is deleted */
-                if (results.attributes.PromotionID[i] == Data.PromotionID) {
+                if (results.attributes.PromotionID[i] == Data.PromotionId) {
                     results.attributes.PromotionID.splice(i,1);
                     /* Save data en Data base of parse */
                     results.save();
