@@ -166,11 +166,11 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
             }
         });
     } else {
-        /* If user exist, only add favorite, to array of user */
+        /* If user exist, only add favorite customer, to array of user */
         FavoriteUser.id = FavoriteID;
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("CustomerID",CustomerID);
-        FavoriteUser.save(null,{
+        return FavoriteUser.save(null,{
             success:function(FavoriteUser) { 
                 response.success("Favorite added to user.");
             },
@@ -289,7 +289,7 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
                 response.success(savePromotion(results[0].id,Data.UserID,Data.PromotionID));
             } else {
                 /*Save new user*/
-                response.success("No existe!!!!");
+                response.success(savePromotion(null,Data.UserID,Data.PromotionID));
             };
         },
         error: function(error) {
