@@ -243,7 +243,7 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
     Data = request.params.Array;
 
     /*promotionSavedData save all data in PromotionSaved class*/
-    var promotionSavedData = Parse.Object.extend("Favorite");
+    var promotionSavedData = Parse.Object.extend("PromotionSaved");
     var query = new Parse.Query(promotionSavedData);
     /*only call data to specific user*/
     query.equalTo("UserID", Data.UserID);
