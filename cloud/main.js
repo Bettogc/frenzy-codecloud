@@ -189,6 +189,7 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
     /*FavoriteData save all data in favorite class*/
     var FavoriteData = Parse.Object.extend("Favorite");
     var query = new Parse.Query(FavoriteData);
+
     /*only call data to specific user*/
     query.equalTo("UserID", Data.UserID);
 
@@ -278,6 +279,7 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
     /*promotionSavedData save all data in PromotionSaved class*/
     var promotionSavedData = Parse.Object.extend("PromotionSaved");
     var query = new Parse.Query(promotionSavedData);
+
     /*only call data to specific user*/
     query.equalTo("UserID", Data.UserID);
 
@@ -294,6 +296,33 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
         },
         error: function(error) {
             response.error(error);
+        }
+    });
+});
+
+Parse.Cloud.define("DeletePromotion",function(request,response){
+    /*Variable to save parameters*/
+    Data = request.params.Array;
+
+    /*promotionSavedData save all data in PromotionSaved class*/
+    var promotionSavedData = Parse.Object.extend("PromotionSaved");
+    var query = new Parse.Query(promotionSavedData);
+
+    /*only call data to specific user*/
+    query.equalTo("UserID", Data.UserID);
+
+    query.each(function(results) {
+        {
+            /* This for loop is to iterate inside of promotionID array */
+            for(var i = 0; i < results.attributes.PromotionID.length; i++){
+                /* If item in array is equal to send for user is deleted */
+                if (results.attributes.PromotionID[i] == Data.PromotionID) {
+                    results.attributes.PromotionID.splice(i,1);
+                    /* Save data en Data base of parse */
+                    results.save();
+                }
+            };
+            response.success("Favorite Promotion Removed to PromotionSaved class");
         }
     });
 });
