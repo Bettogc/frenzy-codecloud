@@ -259,7 +259,7 @@ function savePromotion (FavoriteID, UserID, PromotionID) {
         FavoriteUser.id = FavoriteID;
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("PromotionID",PromotionID);
-        FavoriteUser.save(null,{
+        return FavoriteUser.save(null,{
             success:function(FavoriteUser) { 
                 response.success("Favorite added to user.");
             },
