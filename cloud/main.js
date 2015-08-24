@@ -237,6 +237,39 @@ Parse.Cloud.define("DeleteFavorite",function(request,response){
     });
 });
 
+function savePromotion (FavoriteID, UserID, CustomerID) {
+    /* Create connection to PromotionSaved class in parse */
+    var FavoriteClass = Parse.Object.extend("PromotionSaved");
+    var FavoriteUser = new FavoriteClass();
+
+    /* Null is to verify if user doesn't exist and add user to data base */
+    if (FavoriteID === null) {
+        FavoriteUser.set("UserID",UserID);
+        FavoriteUser.add("PromotionID",PromotionID);
+        return FavoriteUser.save(null,{
+            success:function(FavoriteUser) { 
+                response.success("User created in favorites and favorite added.");
+            },
+            error:function(error) {
+                response.error(error);
+            }
+        });
+    } else {
+        /* If user exist, only add favorite, to array of user */
+        FavoriteUser.id = FavoriteID;
+        FavoriteUser.set("UserID",UserID);
+        FavoriteUser.add("PromotionID",PromotionID);
+        FavoriteUser.save(null,{
+            success:function(FavoriteUser) { 
+                response.success("Favorite added to user.");
+            },
+            error:function(error) {
+                response.error(error);
+            }
+        });
+    };
+}
+
 /*This functions permit save data in Promotion Class*/
 Parse.Cloud.define("SavePromotion", function(request, response) {
     /*Variable to save parameters*/
@@ -253,10 +286,10 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
             /*if length is greater that 0 the user exist*/
             if (results.length > 0) {
                 /*Edit user*/
-                response.success("Existe");
+                response.success(saveFavorite(results[0].id,Data.UserID,Data.PromotionID));
             } else {
                 /*Save new user*/
-                response.success("NUll");
+                response.success("No existe!!!!");
             };
         },
         error: function(error) {
