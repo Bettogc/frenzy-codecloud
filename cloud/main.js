@@ -250,7 +250,14 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
 
     query.find({
         success: function(results) {
-            response.success(results);
+            /*if length is greater that 0 the user exist*/
+            if (results.length > 0) {
+                /*Edit user*/
+                response.success("Existe");
+            } else {
+                /*Save new user*/
+                response.success("NUll");
+            };
         },
         error: function(error) {
             response.error(error);
