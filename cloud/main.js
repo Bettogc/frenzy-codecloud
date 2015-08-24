@@ -32,28 +32,28 @@ Parse.Cloud.define("GetPromotions", function(request, response) {
     var promotion = new Parse.Query('Promotion');
     
     /* This object is to save the list of clients for each promotions*/
-    var costumerQuantityPromotions = [];
+    var customerQuantityPromotions = [];
     
     /* Whit this find we can call all data in Promotions Table */
     promotion.find().then(function(results) {
         for (x in results) {
-            /* clientList save the list of costumers for each promotions in an array */
-            var clientList = results[x].attributes.Costumer;
-            costumerQuantityPromotions.push(clientList);
+            /* clientList save the list of customers for each promotions in an array */
+            var clientList = results[x].attributes.customer;
+            customerQuantityPromotions.push(clientList);
         };
         
-        /* Return Arrey with list of costumer */
-        response.success(costumerQuantityPromotions);
+        /* Return Arrey with list of customer */
+        response.success(customerQuantityPromotions);
     });
 });
 
-/*Sort data in an array for each costumer with your quantity promotions*/
+/*Sort data in an array for each customer with your quantity promotions*/
 Parse.Cloud.define("GetQuantityPromotions", function(request, response) {
     /* Save parameter in promotions */
     promotions = request.params.Array
     var clientList = [];
     
-    /* This object is to save Quantity of promotios by Costumer */
+    /* This object is to save Quantity of promotios by customer */
     var quantityPromotionsCustomer = {"Quantities":[]};
 
     /* This for is for to parse all array inside of promotions*/
@@ -80,68 +80,68 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
     /* Save parameter in quantityAndAverage */
     quantityAndAverage = request.params.Array;
     
-    /* Add a new id insede of quantityAndAverage for save averages by costumer*/
-    quantityAndAverage["averageSavingsCostumer"] = {}
+    /* Add a new id insede of quantityAndAverage for save averages by customer*/
+    quantityAndAverage["averageSavingscustomer"] = {}
     
     /* Crate query for search promotions */
     var promotion = new Parse.Query('Promotion');
     
-    /* This array seve the list off BasePrices and PromotionalPrices by Costumer  */
-    var costumerPrices = {};
-    costumerPrices["pricesList"] = {};
+    /* This array seve the list off BasePrices and PromotionalPrices by customer  */
+    var customerPrices = {};
+    customerPrices["pricesList"] = {};
 
     /* Whit this find we can call all data in Promotions Table */
     promotion.find().then(function(results) {
-        /* Iterates in names of costumers in quantityAndAverage.Quantities */
+        /* Iterates in names of customers in quantityAndAverage.Quantities */
         for (i in quantityAndAverage.Quantities[0]) {
             /* Iterates in Promotions table */
             for (x in results) {
                 /* Save the list of costomer for each promotion */
-                var costumerList = results[x].attributes.Costumer
-                /* Verify if costumer exist inside of costumerList */
-                if(costumerList.indexOf(i)!= -1) {
+                var customerList = results[x].attributes.customer
+                /* Verify if customer exist inside of customerList */
+                if(customerList.indexOf(i)!= -1) {
                     var basePrice = results[x].attributes.BasePrice;
                     var promotionalPrice = results[x].attributes.PromotionalPrice;
                     /* If don't exist create a new id and save data if exist onle add data. */
-                    if (!(i in costumerPrices.pricesList)) {
-                        costumerPrices.pricesList[i] = {};
-                        costumerPrices.pricesList[i]["BasePrice"] = [];
-                        costumerPrices.pricesList[i].BasePrice.push(basePrice);
+                    if (!(i in customerPrices.pricesList)) {
+                        customerPrices.pricesList[i] = {};
+                        customerPrices.pricesList[i]["BasePrice"] = [];
+                        customerPrices.pricesList[i].BasePrice.push(basePrice);
                         
-                        costumerPrices.pricesList[i]["PromotionalPrice"] = [];
-                        costumerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
+                        customerPrices.pricesList[i]["PromotionalPrice"] = [];
+                        customerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
                     } else {
-                        costumerPrices.pricesList[i].BasePrice.push(basePrice);
-                        costumerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
+                        customerPrices.pricesList[i].BasePrice.push(basePrice);
+                        customerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
                     };
                 };
             };
         };
         
-        /* Iterates in costumersPrices for calculate the avarege savings */
-        for (y in costumerPrices.pricesList) {
+        /* Iterates in customersPrices for calculate the avarege savings */
+        for (y in customerPrices.pricesList) {
             
             /* Save and sum all values in the BasePrice list */
-            var sumBasePrice = costumerPrices.pricesList[y].BasePrice.reduce( function(a,b) {
+            var sumBasePrice = customerPrices.pricesList[y].BasePrice.reduce( function(a,b) {
                 return a + b;
             },0);
             
             /* Save and sum all values in the PromotionalPrice list */
-            var sumPromotionalPrice = costumerPrices.pricesList[y].PromotionalPrice.reduce( function(a,b) {
+            var sumPromotionalPrice = customerPrices.pricesList[y].PromotionalPrice.reduce( function(a,b) {
                 return a + b;
             },0);
             
             /* Save length of prices list */
-            var lengthPrices = costumerPrices.pricesList[y].BasePrice.length;
+            var lengthPrices = customerPrices.pricesList[y].BasePrice.length;
             
             /* Calculate the average savings */
             var average = (sumBasePrice-sumPromotionalPrice)/lengthPrices;
             
             /* Save in the principal object! */
-            quantityAndAverage.averageSavingsCostumer[y] = average.toFixed(2);
+            quantityAndAverage.averageSavingscustomer[y] = average.toFixed(2);
         }
         
-        /* Return Arrey with list of costumer with each count promotions by costumer and
+        /* Return Arrey with list of customer with each count promotions by customer and
         your average savings*/
         response.success(quantityAndAverage);
     });
