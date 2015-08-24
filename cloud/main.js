@@ -149,9 +149,11 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
 
 
 function saveFavorite (FavoriteID, UserID, CustomerID) {
+    /* Create connection to favorite class in parse */
     var FavoriteClass = Parse.Object.extend("Favorite");
     var FavoriteUser = new FavoriteClass();
 
+    /* Null is to verify if user doesn't exist and add user to data base */
     if (FavoriteID === null) {
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("CustomerID",CustomerID);
@@ -164,6 +166,7 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
             }
         });
     } else {
+        /* If user exist, only add favorite, to array of user */
         FavoriteUser.id = FavoriteID;
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("CustomerID",CustomerID);
