@@ -248,14 +248,14 @@ function savePromotion (FavoriteID, UserID, CustomerID) {
         FavoriteUser.add("PromotionID",PromotionID);
         return FavoriteUser.save(null,{
             success:function(FavoriteUser) { 
-                response.success("User created in favorites and favorite added.");
+                response.success("User created in PromotionSaved and promotion added.");
             },
             error:function(error) {
                 response.error(error);
             }
         });
     } else {
-        /* If user exist, only add favorite, to array of user */
+        /* If user exist, only add favorite promotion, to array of user */
         FavoriteUser.id = FavoriteID;
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("PromotionID",PromotionID);
@@ -286,7 +286,7 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
             /*if length is greater that 0 the user exist*/
             if (results.length > 0) {
                 /*Edit user*/
-                response.success(saveFavorite(results[0].id,Data.UserID,Data.PromotionID));
+                response.success(savePromotion(results[0].id,Data.UserID,Data.PromotionID));
             } else {
                 /*Save new user*/
                 response.success("No existe!!!!");
