@@ -37,11 +37,13 @@ Parse.Cloud.define("GetPromotions", function(request, response) {
     /* Whit this find we can call all data in Promotions Table */
     promotion.find().then(function(results) {
         for (x in results) {
-            /* clientList save the list of customers for each promotions in an array */
-            var clientList = results[x].attributes.Customer;
-            customerQuantityPromotions.push(clientList);
+            if (results[x].attributes.Status === true) {
+                /* clientList save the list of customers for each promotions in an array */
+                var clientList = results[x].attributes.Customer;
+                customerQuantityPromotions.push(clientList);
+            };
         };
-        
+
         /* Return Arrey with list of customer */
         response.success(customerQuantityPromotions);
     });
