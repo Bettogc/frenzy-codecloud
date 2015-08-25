@@ -98,23 +98,25 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
         for (i in quantityAndAverage.Quantities[0]) {
             /* Iterates in Promotions table */
             for (x in results) {
-                /* Save the list of customer for each promotion */
-                var customerList = results[x].attributes.Customer
-                /* Verify if customer exist inside of customerList */
-                if(customerList.indexOf(i)!= -1) {
-                    var basePrice = results[x].attributes.BasePrice;
-                    var promotionalPrice = results[x].attributes.PromotionalPrice;
-                    /* If don't exist create a new id and save data if exist onle add data. */
-                    if (!(i in customerPrices.pricesList)) {
-                        customerPrices.pricesList[i] = {};
-                        customerPrices.pricesList[i]["BasePrice"] = [];
-                        customerPrices.pricesList[i].BasePrice.push(basePrice);
-                        
-                        customerPrices.pricesList[i]["PromotionalPrice"] = [];
-                        customerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
-                    } else {
-                        customerPrices.pricesList[i].BasePrice.push(basePrice);
-                        customerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
+                if (results[x].attributes.Status === true) {
+                    /* Save the list of customer for each promotion */
+                    var customerList = results[x].attributes.Customer
+                    /* Verify if customer exist inside of customerList */
+                    if(customerList.indexOf(i)!= -1) {
+                        var basePrice = results[x].attributes.BasePrice;
+                        var promotionalPrice = results[x].attributes.PromotionalPrice;
+                        /* If don't exist create a new id and save data if exist onle add data. */
+                        if (!(i in customerPrices.pricesList)) {
+                            customerPrices.pricesList[i] = {};
+                            customerPrices.pricesList[i]["BasePrice"] = [];
+                            customerPrices.pricesList[i].BasePrice.push(basePrice);
+                            
+                            customerPrices.pricesList[i]["PromotionalPrice"] = [];
+                            customerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
+                        } else {
+                            customerPrices.pricesList[i].BasePrice.push(basePrice);
+                            customerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
+                        };
                     };
                 };
             };
