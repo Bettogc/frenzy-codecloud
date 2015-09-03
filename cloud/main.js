@@ -330,3 +330,7 @@ Parse.Cloud.define("DeletePromotion",function(request,response){
         }
     });
 });
+
+Parse.Cloud.define("GetPromotionSaved", function(request,response){
+    response.success("GetPromotionSaved Function Created");
+});
