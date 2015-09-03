@@ -331,11 +331,19 @@ Parse.Cloud.define("DeletePromotion",function(request,response){
     });
 });
 
-Parse.Cloud.define("GetPromotionSaved", function(request,response){
+/*This functions returns all information in promotions class*/
+Parse.Cloud.define("PromotionArray", function(request,response){
+    /* Crate query for search promotions */ 
+    var promotion = new Parse.Query('Promotion');
+    
+    /* Whit this find we can call all data in Promotions Table */
+    promotion.find().then(function(results) {
+        /* Return Array with list of customer */
+        response.success(results);
+    });
+});
 
-    /*GetPromotionSaved save all data in PromotionSaved class*/
-    var GetPromotion = Parse.Object.extend("Promotion");
-    var queryPromotion = new Parse.Query(GetPromotion);
+Parse.Cloud.define("GetPromotionSaved", function(request,response){
 
     /*GetPromotionSaved save all data in PromotionSaved class*/
     var GetPromotionSaved = Parse.Object.extend("PromotionSaved");
@@ -344,4 +352,7 @@ Parse.Cloud.define("GetPromotionSaved", function(request,response){
     /*only call data to specific user*/
     queryPromotionSaved.equalTo("UserID", "807880135947051");
 
+    queryPromotionSaved.find().then(function(results) {
+        response.success(results);
+    });
 });
