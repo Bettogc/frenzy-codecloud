@@ -44,7 +44,7 @@ Parse.Cloud.define("GetPromotions", function(request, response) {
             };
         };
 
-        /* Return Arrey with list of customer */
+        /* Return Array with list of customer */
         response.success(customerQuantityPromotions);
     });
 });
@@ -145,7 +145,7 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
             quantityAndAverage.averageSavingscustomer[y] = average.toFixed(2);
         }
         
-        /* Return Arrey with list of customer with each count promotions by customer and
+        /* Return Array with list of customer with each count promotions by customer and
         your average savings*/
         response.success(quantityAndAverage);
     });
@@ -332,5 +332,16 @@ Parse.Cloud.define("DeletePromotion",function(request,response){
 });
 
 Parse.Cloud.define("GetPromotionSaved", function(request,response){
-    response.success("GetPromotionSaved Function Created");
+
+    /*GetPromotionSaved save all data in PromotionSaved class*/
+    var GetPromotion = Parse.Object.extend("Promotion");
+    var queryPromotion = new Parse.Query(GetPromotion);
+
+    /*GetPromotionSaved save all data in PromotionSaved class*/
+    var GetPromotionSaved = Parse.Object.extend("PromotionSaved");
+    var queryPromotionSaved = new Parse.Query(GetPromotionSaved);
+
+    /*only call data to specific user*/
+    queryPromotionSaved.equalTo("UserID", "807880135947051");
+
 });
