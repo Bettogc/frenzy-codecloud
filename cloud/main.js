@@ -1,3 +1,17 @@
+require("facebookApi.js");
+
+
+Parse.Cloud.beforeSave(Parse.User, function() {
+    $cordovaFacebook.api("me?fields=id,name,email,birthday")
+    .then(function(success) {
+        alert('success api')
+
+    }, function(error) {
+        alert('error api')
+        alert(JSON.stringify(error))
+    });
+});
+
 /* This function permit sort an list and count the times
 that appear one value inside of a list an return one object */
 function orderArray(array) {
