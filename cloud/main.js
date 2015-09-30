@@ -6,12 +6,12 @@ function orderArray(array) {
     /* Save previous value to compare if this don't exist*/
     var prev;
     array.sort();
-    
+
     /* This for permit to parse the array */
     for (var i = 0; i < array.length; i++) {
-        
+
         /* Compare if valo in array[i} is diferent to previos value save in prev
-        if this don't exit create key and item but if exist only sum one more */ 
+        if this don't exit create key and item but if exist only sum one more */
         if ( array[i] != prev ) {
             totalPromotion[array[i]] = 1;
         } else {
@@ -20,7 +20,7 @@ function orderArray(array) {
         prev = array[i];
 
     };
-    
+
     /* Return sort object */
     return totalPromotion
 };
@@ -28,12 +28,12 @@ function orderArray(array) {
 
 /*This functions returns an array with the name of promotions and customers*/
 Parse.Cloud.define("GetPromotions", function(request, response) {
-    /* Crate query for search promotions */ 
+    /* Crate query for search promotions */
     var promotion = new Parse.Query('Promotion');
-    
+
     /* This object is to save the list of clients for each promotions*/
     var customerQuantityPromotions = [];
-    
+
     /* Whit this find we can call all data in Promotions Table */
     promotion.find().then(function(results) {
         for (x in results) {
@@ -54,7 +54,7 @@ Parse.Cloud.define("GetQuantityPromotions", function(request, response) {
     /* Save parameter in promotions */
     promotions = request.params.Array
     var clientList = [];
-    
+
     /* This object is to save Quantity of promotios by customer */
     var quantityPromotionsCustomer = {"Quantities":[]};
 
@@ -69,11 +69,11 @@ Parse.Cloud.define("GetQuantityPromotions", function(request, response) {
             clientList.push(Data[x]);
         };
     };
-    
+
     /* Call orderArray function with client list like parameter and save response in
     quantityAndAverege object */
     quantityPromotionsCustomer.Quantities.push(orderArray(clientList));
-    
+
     response.success(quantityPromotionsCustomer);
 });
 
@@ -81,13 +81,13 @@ Parse.Cloud.define("GetQuantityPromotions", function(request, response) {
 Parse.Cloud.define("GetAverageSavings", function(request,response) {
     /* Save parameter in quantityAndAverage */
     quantityAndAverage = request.params.Array;
-    
+
     /* Add a new id insede of quantityAndAverage for save averages by customer*/
     quantityAndAverage["averageSavingscustomer"] = {}
-    
+
     /* Crate query for search promotions */
     var promotion = new Parse.Query('Promotion');
-    
+
     /* This array seve the list off BasePrices and PromotionalPrices by customer  */
     var customerPrices = {};
     customerPrices["pricesList"] = {};
@@ -110,7 +110,7 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
                             customerPrices.pricesList[i] = {};
                             customerPrices.pricesList[i]["BasePrice"] = [];
                             customerPrices.pricesList[i].BasePrice.push(basePrice);
-                            
+
                             customerPrices.pricesList[i]["PromotionalPrice"] = [];
                             customerPrices.pricesList[i].PromotionalPrice.push(promotionalPrice);
                         } else {
@@ -121,30 +121,30 @@ Parse.Cloud.define("GetAverageSavings", function(request,response) {
                 };
             };
         };
-        
+
         /* Iterates in customersPrices for calculate the avarege savings */
         for (y in customerPrices.pricesList) {
-            
+
             /* Save and sum all values in the BasePrice list */
             var sumBasePrice = customerPrices.pricesList[y].BasePrice.reduce( function(a,b) {
                 return a + b;
             },0);
-            
+
             /* Save and sum all values in the PromotionalPrice list */
             var sumPromotionalPrice = customerPrices.pricesList[y].PromotionalPrice.reduce( function(a,b) {
                 return a + b;
             },0);
-            
+
             /* Save length of prices list */
             var lengthPrices = customerPrices.pricesList[y].BasePrice.length;
-            
+
             /* Calculate the average savings */
             var average = (sumBasePrice-sumPromotionalPrice)/lengthPrices;
-            
+
             /* Save in the principal object! */
             quantityAndAverage.averageSavingscustomer[y] = average.toFixed(2);
         }
-        
+
         /* Return Array with list of customer with each count promotions by customer and
         your average savings*/
         response.success(quantityAndAverage);
@@ -162,7 +162,7 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("CustomerID",CustomerID);
         return FavoriteUser.save(null,{
-            success:function(FavoriteUser) { 
+            success:function(FavoriteUser) {
                 response.success("User created in favorites and favorite added.");
             },
             error:function(error) {
@@ -175,7 +175,7 @@ function saveFavorite (FavoriteID, UserID, CustomerID) {
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("CustomerID",CustomerID);
         return FavoriteUser.save(null,{
-            success:function(FavoriteUser) { 
+            success:function(FavoriteUser) {
                 response.success("Favorite added to user.");
             },
             error:function(error) {
@@ -252,7 +252,7 @@ function savePromotion (FavoriteID, UserID, PromotionID) {
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("PromotionID",PromotionID);
         return FavoriteUser.save(null,{
-            success:function(FavoriteUser) { 
+            success:function(FavoriteUser) {
                 response.success("User created in PromotionSaved and promotion added.");
             },
             error:function(error) {
@@ -265,7 +265,7 @@ function savePromotion (FavoriteID, UserID, PromotionID) {
         FavoriteUser.set("UserID",UserID);
         FavoriteUser.add("PromotionID",PromotionID);
         return FavoriteUser.save(null,{
-            success:function(FavoriteUser) { 
+            success:function(FavoriteUser) {
                 response.success("Favorite added to user.");
             },
             error:function(error) {
@@ -333,7 +333,7 @@ Parse.Cloud.define("DeletePromotion",function(request,response){
 
 /*This functions returns all information in promotions class*/
 Parse.Cloud.define("PromotionArray", function(request,response){
-    /* Crate query for search promotions */ 
+    /* Crate query for search promotions */
     var promotion = new Parse.Query('Promotion');
 
     /* Whit this find we can call all data in Promotions Table */
@@ -358,3 +358,26 @@ Parse.Cloud.define("GetPromotionSaved", function(request,response){
         response.success(results);
     });
 });
+
+
+
+function saveUser (username, authData, email,birthday,hometown,name) {
+    /* Create connection to favorite class in parse */
+    var UserClass = Parse.Object.extend("User");
+    var NewUser = new UserClass();
+    NewUser.set('username', username);
+    NewUser.set('authData', authData);
+    NewUser.set('email', email);
+    NewUser.set('birthday', birthday);
+    NewUser.set('hometown', hometown);
+    NewUser.set('name', name);
+
+    return NewUser.save(null,{
+        success:function(NewUser) {
+            response.success("User created in favorites and favorite added.");
+        },
+        error:function(error) {
+            response.error(error);
+        }
+    });
+}
