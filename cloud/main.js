@@ -1,4 +1,4 @@
-require("facebookApi.js");
+var fbApi = require("cloud/sdk.js");
 
 
 Parse.Cloud.beforeSave(Parse.User, function() {
