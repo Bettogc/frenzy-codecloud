@@ -1,18 +1,21 @@
 Parse.Cloud.beforeSave(Parse.User, function(request, response) {
-    var user = request.object;
-    if (Parse.FacebookUtils.isLinked(user)) {
-        Parse.Cloud.httpRequest({
-            url: 'https://graph.facebook.com/me?',
-            params: {
-                fields: 'email,name,username',
-                access_token: user.get('authData').facebook.access_token
-            }
-        }).then(function(httpResponse) {
-            console.log(httpResponse.text);
-        }, function(httpResponse) {
-            console.error(httpResponse.status);
-        });
-    }
+  var user = request.object;
+  if (Parse.FacebookUtils.isLinked(user)) {
+    Parse.Cloud.httpRequest({
+      url: 'https://graph.facebook.com/me?fields=email,name,id,birthday&access_token='+user.get('authData').facebook.access_token
+    }).then(function(httpResponse) {
+      // Succesfully got FB user info
+      console.log(httpResponse.text);
+
+          request.object.set('email', httpResponse.email);
+          response.success();
+
+    }, function(httpResponse) {
+      // Error pulling user info from FB
+        console.error(httpResponse.text);
+        response.error("There was a problem logging into Facebook. Please try again later.");
+    });
+  }
 });
 
 /* This function permit sort an list and count the times
