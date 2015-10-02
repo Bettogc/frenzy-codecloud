@@ -2,13 +2,15 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
   var user = request.object;
   if (Parse.FacebookUtils.isLinked(user)) {
     Parse.Cloud.httpRequest({
-      url: 'https://graph.facebook.com/me?fields=email,name,id,birthday&access_token='+user.get('authData').facebook.access_token
+      url: 'https://graph.facebook.com/me?fields=email,name,id,birthday,hometown&access_token='+user.get('authData').facebook.access_token
     }).then(function(httpResponse) {
       // Succesfully got FB user info
-      console.log(httpResponse.text);
-
-          request.object.set('email', httpResponse.email);
-          response.success();
+            console.log(httpResponse.text);
+            var json = JSON.parse(httpResponse.text);
+            console.log(json);
+            request.object.set("name", String(json.name));
+            request.object.set("birthday", String(json.birthday));
+            response.success()
 
     }, function(httpResponse) {
       // Error pulling user info from FB
