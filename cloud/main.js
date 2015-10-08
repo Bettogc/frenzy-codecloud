@@ -398,26 +398,3 @@ Parse.Cloud.define("GetPromotionSaved", function(request,response){
         response.success(results);
     });
 });
-
-
-
-function saveUser (username, authData, email,birthday,hometown,name) {
-    /* Create connection to favorite class in parse */
-    var UserClass = Parse.Object.extend("User");
-    var NewUser = new UserClass();
-    NewUser.set('username', username);
-    NewUser.set('authData', authData);
-    NewUser.set('email', email);
-    NewUser.set('birthday', birthday);
-    NewUser.set('hometown', hometown);
-    NewUser.set('name', name);
-
-    return NewUser.save(null,{
-        success:function(NewUser) {
-            response.success("User created in favorites and favorite added.");
-        },
-        error:function(error) {
-            response.error(error);
-        }
-    });
-}
