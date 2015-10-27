@@ -398,3 +398,67 @@ Parse.Cloud.define("GetPromotionSaved", function(request,response){
         response.success(results);
     });
 });
+
+
+
+function saveCupon (FavoriteID, UserID, CuponID) {
+    /* Create connection to PromotionSaved class in parse */
+    var FavoriteClass = Parse.Object.extend("PromotionSaved");
+    var FavoriteUser = new FavoriteClass();
+
+    /* Null is to verify if user doesn't exist and add user to data base */
+    if (FavoriteID === null) {
+        FavoriteUser.set("UserID",UserID);
+        FavoriteUser.add("CuponID",CuponID);
+        return FavoriteUser.save(null,{
+            success:function(FavoriteUser) {
+                response.success("User created in PromotionSaved and cupon added.");
+            },
+            error:function(error) {
+                response.error(error);
+            }
+        });
+    } else {
+        /* If user exist, only add favorite promotion, to array of user */
+        FavoriteUser.id = FavoriteID;
+        FavoriteUser.set("UserID",UserID);
+        FavoriteUser.add("CuponID",CuponID);
+        return FavoriteUser.save(null,{
+            success:function(FavoriteUser) {
+                response.success("Favorite cumpon added to user.");
+            },
+            error:function(error) {
+                response.error(error);
+            }
+        });
+    };
+}
+
+/*This functions permit save data in PromotionSaved Class*/
+Parse.Cloud.define("saveCuponFavorite", function(request, response) {
+    /*Variable to save parameters*/
+    Data = request.params.Array;
+
+    /*promotionSavedData save all data in PromotionSaved class*/
+    var cuponSavedData = Parse.Object.extend("PromotionSaved");
+    var query = new Parse.Query(cuponSavedData);
+
+    /*only call data to specific user*/
+    query.equalTo("UserID", Data.UserID);
+
+    query.find({
+        success: function(results) {
+            /*if length is greater that 0 the user exist*/
+            if (results.length > 0) {
+                /*Edit user*/
+                response.success(saveCupon(results[0].id,Data.UserID,Data.CuponID));
+            } else {
+                /*Save new user*/
+                response.success(saveCupon(null,Data.UserID,Data.CuponID));
+            };
+        },
+        error: function(error) {
+            response.error(error);
+        }
+    });
+});
