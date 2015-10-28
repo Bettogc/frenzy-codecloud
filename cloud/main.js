@@ -371,36 +371,6 @@ Parse.Cloud.define("DeletePromotion",function(request,response){
     });
 });
 
-/*This functions returns all information in promotions class*/
-Parse.Cloud.define("PromotionArray", function(request,response){
-    /* Crate query for search promotions */
-    var promotion = new Parse.Query('Promotion');
-
-    /* Whit this find we can call all data in Promotions Table */
-    promotion.find().then(function(results) {
-        /* Return Array with list of customer */
-        response.success(results);
-    });
-});
-
-Parse.Cloud.define("GetPromotionSaved", function(request,response){
-    /*Variable to save parameters*/
-    Data = request.params.Array;
-
-    /*GetPromotionSaved save all data in PromotionSaved class*/
-    var GetPromotionSaved = Parse.Object.extend("PromotionSaved");
-    var queryPromotionSaved = new Parse.Query(GetPromotionSaved);
-
-    /*only call data to specific user*/
-    queryPromotionSaved.equalTo("UserID", Data.UserID);
-
-    queryPromotionSaved.find().then(function(results) {
-        response.success(results);
-    });
-});
-
-
-
 function saveCupon (FavoriteID, UserID, CuponID) {
     /* Create connection to PromotionSaved class in parse */
     var FavoriteClass = Parse.Object.extend("PromotionSaved");
