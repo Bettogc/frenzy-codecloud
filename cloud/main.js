@@ -1,42 +1,42 @@
-Parse.Cloud.beforeSave(Parse.User, function(request, response) {
-    var user = request.object;
-    if (Parse.FacebookUtils.isLinked(user)) {
-        Parse.Cloud.httpRequest({
-            url: 'https://graph.facebook.com/me?fields=email,name,birthday,hometown&access_token='+user.get('authData').facebook.access_token
-        }).then(function(httpResponse) {
-            // Succesfully got FB user info
-            var json = JSON.parse(httpResponse.text);
-            request.object.set("name", String(json.name));
-            request.object.set("birthday", String(json.birthday));
-            request.object.set("hometown", json.hometown);
-            response.success();
-        }, function(httpResponse) {
-            // Error pulling user info from FB
-            response.error("There was a problem logging into Facebook. Please try again later.");
-        });
-    }
-});
-
-Parse.Cloud.afterSave(Parse.User, function(request, response) {
-    var user = request.object;
-    if (request.user.get('authData') != {}){
-        var fb_auth = request.user.get('authData')['facebook'];
-        var email;
-        Parse.Cloud.httpRequest({
-            method: "GET",
-            url: "https://graph.facebook.com/" + fb_auth['id'] + "?fields=email&access_token=" + fb_auth['access_token'],
-            success: function(httpResponse) {
-                email = httpResponse.data['email'];
-                Parse.Cloud.useMasterKey();
-                user.setEmail(email, {});
-                user.save();
-            },
-            error: function(httpResponse) {
-                console.log('error');
-            }
-        });
-    }
-});
+// Parse.Cloud.beforeSave(Parse.User, function(request, response) {
+//     var user = request.object;
+//     if (Parse.FacebookUtils.isLinked(user)) {
+//         Parse.Cloud.httpRequest({
+//             url: 'https://graph.facebook.com/me?fields=email,name,birthday,hometown&access_token='+user.get('authData').facebook.access_token
+//         }).then(function(httpResponse) {
+//             // Succesfully got FB user info
+//             var json = JSON.parse(httpResponse.text);
+//             request.object.set("name", String(json.name));
+//             request.object.set("birthday", String(json.birthday));
+//             request.object.set("hometown", json.hometown);
+//             response.success();
+//         }, function(httpResponse) {
+//             // Error pulling user info from FB
+//             response.error("There was a problem logging into Facebook. Please try again later.");
+//         });
+//     }
+// });
+//
+// Parse.Cloud.afterSave(Parse.User, function(request, response) {
+//     var user = request.object;
+//     if (request.user.get('authData') != {}){
+//         var fb_auth = request.user.get('authData')['facebook'];
+//         var email;
+//         Parse.Cloud.httpRequest({
+//             method: "GET",
+//             url: "https://graph.facebook.com/" + fb_auth['id'] + "?fields=email&access_token=" + fb_auth['access_token'],
+//             success: function(httpResponse) {
+//                 email = httpResponse.data['email'];
+//                 Parse.Cloud.useMasterKey();
+//                 user.setEmail(email, {});
+//                 user.save();
+//             },
+//             error: function(httpResponse) {
+//                 console.log('error');
+//             }
+//         });
+//     }
+// });
 
 /* This function permit sort an list and count the times
 that appear one value inside of a list an return one object */
