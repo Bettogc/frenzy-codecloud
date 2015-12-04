@@ -1,3 +1,45 @@
+// This call to external library of moment-timezone.js for select a country time.
+var moment = require('cloud/moment-timezone.js');
+// Contain the countries with Date/Time
+moment.tz.add(require('cloud/moment-timezone-with-data.js'));
+// Add (Date/Time) Guatemala country
+moment.tz.add('America/Guatemala|LMT CST CDT|62.4 60 50|0121212121|-24KhV.U 2efXV.U An0 mtd0 Nz0 ifB0 17b0 zDB0 11z0');
+
+function changeStatus(endHour,idPromo,actualHourCST) {
+  var promotionClass = new Parse.Object.extend("Promotion");
+	var promotionData = new promotionClass();
+	var endDatePromotion = new Date(endHour);
+	var actualHourGuatemala = new Date(actualHourCST);
+	// Data validation (if actualHourGuatemala is major a endDatePromotion return false in status col in parse)
+	if(actualHourGuatemala > endDatePromotion){
+		promotionData.id = idPromo;
+		promotionData.set("Status",false);
+		promotionData.save();
+	};
+};
+
+Parse.Cloud.define("verifyFinalizedPromotions", function (request, response) {
+	// Connection with Hours Class for objectId
+	var query = new Parse.Query('Promotion');
+	// Take the Date of Guatemala City Country in long date
+	var actualHour = moment().tz("America/Guatemala").format('LLL');
+	query.equalTo("Status", true);
+
+	// Find the endDate in Hour class ClassName
+	query.find({
+		success: function(results) {
+			for (i in results) {
+				// Take the actualHour variable for send to changeStatus function
+				changeStatus(results[i].attributes.EndDate,results[i].id,actualHour);
+			};
+			response.success("Realizado");
+		},
+		error: function(error){
+			console.log(error);
+		}
+	});
+});
+
 // Parse.Cloud.beforeSave(Parse.User, function(request, response) {
 //     var user = request.object;
 //     if (Parse.FacebookUtils.isLinked(user)) {
