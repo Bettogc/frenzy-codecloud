@@ -18,7 +18,7 @@ function changeStatusPromotion(endHour,idPromo,actualHourCST) {
 	};
 };
 
-Parse.Cloud.define("verifyFinalizedPromotions", function (request, response) {
+Parse.Cloud.job("verifyFinalizedPromotions", function (request, response) {
 	// Connection with Hours Class for objectId
 	var query = new Parse.Query('Promotion');
 	// Take the Date of Guatemala City Country in long date
@@ -53,7 +53,7 @@ function changeStatusCoupons(endHour,idPromo,actualHourCST) {
 	};
 };
 
-Parse.Cloud.define("verifyFinalizedCoupons", function (request, response) {
+Parse.Cloud.job("verifyFinalizedCoupons", function (request, response) {
 	// Connection with Hours Class for objectId
 	var query = new Parse.Query('Cupon');
 	// Take the Date of Guatemala City Country in long date
@@ -76,48 +76,50 @@ Parse.Cloud.define("verifyFinalizedCoupons", function (request, response) {
 	});
 });
 
+Parse.Cloud.beforeSave(Parse.User, function(request, response) {
+    var user = request.object;
+     if (user.get('authData') != {}){
+      if (Parse.FacebookUtils.isLinked(user)) {
+          var keyaccess = user.get('authData').facebook.access_token
+          Parse.Cloud.httpRequest({
+              url: 'https://graph.facebook.com/me?fields=email,name,birthday,hometown&access_token='+user.get('authData').facebook.access_token
+          }).then(function(httpResponse) {
+              // Succesfully got FB user info
+              var json = JSON.parse(httpResponse.text);
+              request.object.set("name", String(json.name));
+              request.object.set("birthday", String(json.birthday));
+              request.object.set("hometown", json.hometown);
+              response.success();
+          }, function(httpResponse) {
+              // Error pulling user info from FB
+              response.error("There was a problem logging into Facebook. Please try again later.");
+          });
+      }
+     }
+    response.success(user);
+});
 
-
-// Parse.Cloud.beforeSave(Parse.User, function(request, response) {
-//     var user = request.object;
-//     if (Parse.FacebookUtils.isLinked(user)) {
-//         Parse.Cloud.httpRequest({
-//             url: 'https://graph.facebook.com/me?fields=email,name,birthday,hometown&access_token='+user.get('authData').facebook.access_token
-//         }).then(function(httpResponse) {
-//             // Succesfully got FB user info
-//             var json = JSON.parse(httpResponse.text);
-//             request.object.set("name", String(json.name));
-//             request.object.set("birthday", String(json.birthday));
-//             request.object.set("hometown", json.hometown);
-//             response.success();
-//         }, function(httpResponse) {
-//             // Error pulling user info from FB
-//             response.error("There was a problem logging into Facebook. Please try again later.");
-//         });
-//     }
-// });
-//
-// Parse.Cloud.afterSave(Parse.User, function(request, response) {
-//     var user = request.object;
-//     if (request.user.get('authData') != {}){
-//         var fb_auth = request.user.get('authData')['facebook'];
-//         var email;
-//         Parse.Cloud.httpRequest({
-//             method: "GET",
-//             url: "https://graph.facebook.com/" + fb_auth['id'] + "?fields=email&access_token=" + fb_auth['access_token'],
-//             success: function(httpResponse) {
-//                 email = httpResponse.data['email'];
-//                 Parse.Cloud.useMasterKey();
-//                 user.setEmail(email, {});
-//                 user.save();
-//             },
-//             error: function(httpResponse) {
-//                 console.log('error');
-//             }
-//         });
-//     }
-// });
-
+Parse.Cloud.afterSave(Parse.User, function(request, response) {
+    var user = request.object;
+    console.log('7777777777777 ' + JSON.stringify(user));
+    if (user.get('authData') != {}){
+        var fb_auth = request.user.get('authData')['facebook'];
+        var email;
+        Parse.Cloud.httpRequest({
+            method: "GET",
+            url: "https://graph.facebook.com/" + fb_auth['id'] + "?fields=email&access_token=" + fb_auth['access_token'],
+            success: function(httpResponse) {
+                email = httpResponse.data['email'];
+                Parse.Cloud.useMasterKey();
+                user.setEmail(email, {});
+                user.save();
+            },
+            error: function(httpResponse) {
+                console.log('error');
+            }
+        });
+    }
+});
 /* This function permit sort an list and count the times
 that appear one value inside of a list an return one object */
 function orderArray(array) {
@@ -144,8 +146,77 @@ function orderArray(array) {
     /* Return sort object */
     return totalPromotion
 };
+// Get count of coupons for categories
+Parse.Cloud.job('AppCategoryServicePromotion', function(request, status){
 
+    /* Create query for search AppCategory */
+    var Category = new Parse.Query('AppCategory');
+    /* Create query for search Promotions */
+    var Promotion = new Parse.Query('Promotion');
 
+    var CountPromotionEnt = new Parse.Object.extend("AppCategory");
+    var CountPromotion = new CountPromotionEnt();
+
+    Promotion.equalTo("Status",true)
+
+    Category.each(function (CategoryResults) {
+        Promotion.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
+        return Promotion.count({
+            success: function(count) {
+                // The count request succeeded. Show the count
+                CountPromotion.id = CategoryResults.id;
+                CountPromotion.set("QuantityPromotion",count);
+                return CountPromotion.save();
+            },
+            error: function(error) {
+                // The request failed
+            }
+        })
+    }).then(function() {
+        // Set the job's success status
+        status.success("Count completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    });
+
+});
+// Get count of coupons for categories
+Parse.Cloud.job('AppCategoryServiceCoupons', function(request, status){
+
+    /* Create query for search AppCategory */
+    var Category = new Parse.Query('AppCategory');
+    /* Create query for search Promotions */
+    var Coupons = new Parse.Query('Cupon');
+
+    var CountCouponsEnt = new Parse.Object.extend("AppCategory");
+    var CountCoupons = new CountCouponsEnt();
+    /* Create query for search Cupones */
+
+    Coupons.equalTo("Status",true)
+
+    Category.each(function (CategoryResults) {
+        Coupons.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
+        return Coupons.count({
+            success: function(count) {
+                // The count request succeeded. Show the count
+                CountCoupons.id = CategoryResults.id;
+                CountCoupons.set("QuantityCoupon",count);
+                return CountCoupons.save();
+            },
+            error: function(error) {
+                // The request failed
+            }
+        })
+    }).then(function() {
+        // Set the job's success status
+        status.success("Count completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    });
+
+});
 /*This functions returns an array with the name of promotions and customers*/
 Parse.Cloud.define("GetPromotions", function(request, response) {
     /* Crate query for search promotions */
