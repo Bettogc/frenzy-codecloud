@@ -63,6 +63,7 @@ Parse.Cloud.job("verifyFinalizedCoupons", function (request, status) {
     var query = new Parse.Query('Cupon');
     // Take the Date of Guatemala City Country in long date
     var actualHour = moment().tz("America/Guatemala").format('LLL');
+    query.equalTo("TypeCoupon", "Fecha");
     query.equalTo("Status", true);
 
     // Find the endDate in Hour class ClassName
@@ -130,6 +131,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         });
     }
 });
+
 /* This function permit sort an list and count the times
 that appear one value inside of a list an return one object */
 function orderArray(array) {
@@ -155,67 +157,37 @@ function orderArray(array) {
 
     /* Return sort object */
     return totalPromotion
-};
+}
+
 // Get count of coupons for categories
-Parse.Cloud.job('AppCategoryServicePromotion', function(request, status){
+Parse.Cloud.job('QuantityPromotionsForCategories', function(request, status) {
 
     /* Create query for search AppCategory */
     var Category = new Parse.Query('AppCategory');
+
     /* Create query for search Promotions */
     var Promotion = new Parse.Query('Promotion');
+    Promotion.equalTo("Status",true);
 
-    var CountPromotionEnt = new Parse.Object.extend("AppCategory");
-    var CountPromotion = new CountPromotionEnt();
+    var CountPromotionForCustomer = new Parse.Object.extend("AppCategory");
+    var CountPromotion = new CountPromotionForCustomer();
 
-    Promotion.equalTo("Status",true)
+    Category.each(function(CategoryResults) {
 
-    Category.each(function (CategoryResults) {
-        Promotion.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
-        return Promotion.count({
-            success: function(count) {
-                // The count request succeeded. Show the count
-                CountPromotion.id = CategoryResults.id;
-                CountPromotion.set("QuantityPromotion",count);
-                return CountPromotion.save();
+      Promotion.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
+
+      return Promotion.count({
+          success: function(count) {
+              // The count request succeeded. Show the count
+              console.log(count);
+              CountPromotion.id = CategoryResults.id;
+              CountPromotion.set("QuantityPromotion",count);
+              return CountPromotion.save();
             },
             error: function(error) {
-                // The request failed
+              return "The request failed"
             }
-        })
-    }).then(function() {
-        // Set the job's success status
-        status.success("Count completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    });
-
-});
-// Get count of coupons for categories
-Parse.Cloud.job('AppCategoryServiceCoupons', function(request, status){
-    /* Create query for search AppCategory */
-    var Category = new Parse.Query('AppCategory');
-    /* Create query for search Promotions */
-    var Coupons = new Parse.Query('Cupon');
-    Coupons.equalTo("Status",true)
-
-    var CountCouponsEnt = new Parse.Object.extend("AppCategory");
-    var CountCoupons = new CountCouponsEnt();
-    /* Create query for search Cupones */
-
-    Category.each(function (CategoryResults) {
-        Coupons.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
-        return Coupons.count({
-            success: function(count) {
-                // The count request succeeded. Show the count
-                CountCoupons.id = CategoryResults.id;
-                CountCoupons.set("QuantityCoupon",count);
-                return CountCoupons.save();
-            },
-            error: function(error) {
-                // The request failed
-            }
-        })
+      });
     }).then(function() {
         // Set the job's success status
         status.success("Count completed successfully.");
@@ -260,8 +232,44 @@ Parse.Cloud.job('QuantityPromotionsForCustomer', function(request, status){
     }, function(error) {
         // Set the job's error status
         status.error("Uh oh, something went wrong.");
-    });
+    })
 });
+
+// Get count of coupons for categories
+Parse.Cloud.job('QuantityPromotionsForCoupons', function(request, status){
+
+    /* Create query for search AppCategory */
+    var Category = new Parse.Query('AppCategory');
+    /* Create query for search Promotions */
+    var Coupons = new Parse.Query('Cupon');
+    Coupons.equalTo("Status",true)
+
+    var CountCouponsEnt = new Parse.Object.extend("AppCategory");
+    var CountCoupons = new CountCouponsEnt();
+    /* Create query for search Cupones */
+
+    Category.each(function (CategoryResults) {
+        Coupons.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
+        return Coupons.count({
+            success: function(count) {
+                // The count request succeeded. Show the count
+                CountCoupons.id = CategoryResults.id;
+                CountCoupons.set("QuantityCoupon",count);
+                return CountCoupons.save();
+            },
+            error: function(error) {
+                // The request failed
+            }
+        })
+    }).then(function() {
+        // Set the job's success status
+        status.success("Count completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    })
+})
+
 // Event "JOB" for calculate the count of coupons for each customer
 Parse.Cloud.job('QuantityCouponsForCustomer', function(request, status){
 
@@ -299,6 +307,7 @@ Parse.Cloud.job('QuantityCouponsForCustomer', function(request, status){
         status.error("Uh oh, something went wrong.");
     });
 });
+
 // Event "JOB" for calculate the total count of coupons for each customer
 Parse.Cloud.job('AverageSavingForCustomer', function(request, status){
     /* Create query for search Customer */
