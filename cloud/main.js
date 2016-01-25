@@ -112,7 +112,6 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
 
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
     var user = request.object;
-    console.log('7777777777777 ' + JSON.stringify(user));
     if (user.get('authData') != {}){
         var fb_auth = request.user.get('authData')['facebook'];
         var email;
@@ -195,7 +194,6 @@ Parse.Cloud.job('QuantityPromotionsForCategories', function(request, status) {
         // Set the job's error status
         status.error("Uh oh, something went wrong.");
     });
-
 });
 
 // Event "JOB" for calculate the count of promotions for each customer
@@ -348,47 +346,145 @@ Parse.Cloud.job('AverageSavingForCustomer', function(request, status){
         status.error("Uh oh, something went wrong.");
     });
 });
-/* *********************************************************************************** */
+
 Parse.Cloud.define('GetCustomer', function(request, response) {
     var CustomerList = [];
     var Customer = new Parse.Query('Customer');
-
-    var FavoriteHeartCustomer = new Parse.Query('Favorite')
-    FavoriteHeartCustomer.equalTo("UserID", request.params.Array.IdUsuario);
 
     Customer.each(function(results) {
         CustomerList.push({
             name: results.attributes.Logo._url, promo: results.attributes.QuantityPromotion,promedio:results.attributes.AverageSaving,
             lastText: "favorite", NameCategory: results.attributes.Name ,oferta : 'existe',
-            colorHeart: "white",Category:results.attributes.CategoryApp
+            colorHeart: "white",Category:results.attributes.CategoryApp,coupon: results.attributes.QuantityCoupon
         })
-    }).then(function(){
-        return FavoriteHeartCustomer.find({
-            success: function(results) {
-                for (a in results[0].attributes.CustomerID){
-                    for (b in CustomerList){
-                        if (results[0].attributes.CustomerID[a] === CustomerList[b].NameCategory){
-                            if (CustomerList[b].colorHeart === "white") {
-                                CustomerList[b].colorHeart  = "red";
-                                console.log('calami');
-                                console.log(CustomerList[b]);
-                            }
-                        }
-                    }
-                }
-
-            },
-            error: function(myObject, error) {
-                // Error occureds
-                console.log( error );
-            }
-        }).then(function () {
+    }).then(function () {
           response.success(CustomerList);
         });
 
+});
+/* Get and return an object for Promotions entity */
+Parse.Cloud.define('GetPromotionsApp', function(request, response) {
+    var CurrentPromotion = [];
+    var Promotion = new Parse.Query('Promotion');
+    // Search Promotions with status true
+    Promotion.equalTo('Status', true);
+
+    Promotion.each(function(results) {
+      for (i in results.attributes.Customer) {
+          if(results.attributes.Photo === null || results.attributes.Photo === undefined){
+              CurrentPromotion.push({
+                  nul:"sin",
+                  name:results.attributes.Name,
+                  presentation:results.attributes.Presentation,
+                  description:results.attributes.PromotionDescription,
+                  basePrice:results.attributes.BasePrice,
+                  promotionalPrice:results.attributes.PromotionalPrice,
+                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
+                  Category:results.attributes.Customer[i],
+                  ID:"pinOffertsWithoutImage",
+                  IDpromotion: results.id,
+                  conteo:0,
+                  oferta:"existe",
+                  Our_Favorites:results.attributes.OurFavorite,
+                  PhotoFavorite: results.attributes.PhotoFavorite,
+                  Logo:"",
+                  ColorPin: "silver",
+                  ShopOnline:results.attributes.ShopOnline,
+                  IconShopOnline: "j",
+                  Display: "",
+              });
+          } else {
+              CurrentPromotion.push({
+                  nul:"con",
+                  photo:results.attributes.Photo._url,
+                  name:results.attributes.Name,
+                  presentation:results.attributes.Presentation,
+                  description:results.attributes.PromotionDescription,
+                  basePrice:results.attributes.BasePrice,
+                  promotionalPrice:results.attributes.PromotionalPrice,
+                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
+                  Category:results.attributes.Customer[i],
+                  ID:"pinOfferts",
+                  IDpromotion: results.id,
+                  conteo:0,
+                  oferta:"existe",
+                  Our_Favorites:results.attributes.OurFavorite,
+                  PhotoFavorite: results.attributes.PhotoFavorite,
+                  Logo:"",
+                  ColorPin: "silver",
+                  ShopOnline:results.attributes.ShopOnline,
+                  IconShopOnline: "j",
+                  Display: "",
+              });
+          }
+      }
+    }).then(function () {
+        response.success(CurrentPromotion);
     });
-})
-/* *********************************************************************************** */
+});
+/* Get and return an object for Coupons entity */
+Parse.Cloud.define('GetCouponsApp', function(request, response) {
+    var CurrentCoupons = [];
+    var Coupons = new Parse.Query('Cupon');
+    // Search Coupons with status true
+    Coupons.equalTo('Status', true);
+
+    Coupons.each(function(results) {
+        for (i in results.attributes.Customer) {
+            if(results.attributes.PhotoCupon === null || results.attributes.PhotoCupon === undefined){
+                CurrentCoupons.push({
+                    nul:"sin",
+                    name:results.attributes.Name,
+                    description:results.attributes.PromotionDescription,
+                    Canjea:results.attributes.CuponDiscount,
+                    Category:results.attributes.Customer[i],
+                    cupon:"existe",
+                    ColorPinCupon: "silver",
+                    BarCodePhoto:results.attributes.BarCodePhoto,
+                    Presentation:results.attributes.Presentation,
+                    description:results.attributes.PromotionDescription,
+                    customer:results.attributes.Customer[i],
+                    PhotoCupon:results.attributes.PhotoCupon,
+                    Publication_Date:results.attributes.PublicationDate,
+                    End_Date:results.attributes.EndDate,
+                    IDCupon:results.id,
+                    Categoryapp:results.attributes.CategoryApp,
+                    TypeCoupon:results.attributes.TypeCoupon,
+                    QuantityCoupons:results.attributes.QuantityCoupons,
+                    QuantityExchanged:results.attributes.QuantityExchanged,
+                    ShopOnline:results.attributes.ShopOnline,
+                    Display:"",
+              });
+          } else {
+              CurrentCoupons.push({
+                  nul:"con",
+                  name:results.attributes.Name,
+                  description:results.attributes.PromotionDescription,
+                  Canjea:results.attributes.CuponDiscount,
+                  Category:results.attributes.Customer[i],
+                  cupon:"existe",
+                  ColorPinCupon: "silver",
+                  BarCodePhoto:results.attributes.BarCodePhoto,
+                  Presentation:results.attributes.Presentation,
+                  description:results.attributes.PromotionDescription,
+                  customer:results.attributes.Customer[i],
+                  PhotoCupon:results.attributes.PhotoCupon,
+                  Publication_Date:results.attributes.PublicationDate,
+                  End_Date:results.attributes.EndDate,
+                  IDCupon:results.id,
+                  Categoryapp:results.attributes.CategoryApp,
+                  TypeCoupon:results.attributes.TypeCoupon,
+                  QuantityCoupons:results.attributes.QuantityCoupons,
+                  QuantityExchanged:results.attributes.QuantityExchanged,
+                  ShopOnline:results.attributes.ShopOnline,
+                  Display:"",
+              });
+          }
+      }
+    }).then(function() {
+        response.success(CurrentCoupons);
+    });
+});
 /*This functions returns an array with the name of promotions and customers*/
 Parse.Cloud.define("GetPromotions", function(request, response) {
     /* Crate query for search promotions */
