@@ -1,92 +1,3 @@
-// This call to external library of moment-timezone.js for select a country time.
-var moment = require('cloud/moment-timezone.js');
-// Contain the countries with Date/Time
-moment.tz.add(require('cloud/moment-timezone-with-data.js'));
-// Add (Date/Time) Guatemala country
-moment.tz.add('America/Guatemala|LMT CST CDT|62.4 60 50|0121212121|-24KhV.U 2efXV.U An0 mtd0 Nz0 ifB0 17b0 zDB0 11z0');
-// This function and verifyFinalizedPromotions cloud define, disable promotion when the date promotion end.
-function changeStatusPromotion(endHour,idPromo,actualHourCST) {
-  var promotionClass = new Parse.Object.extend("Promotion");
-    var promotionData = new promotionClass();
-    var endDatePromotion = new Date(endHour);
-    var actualHourGuatemala = new Date(actualHourCST);
-    // Data validation (if actualHourGuatemala is major a endDatePromotion return false in status col in parse)
-    if(actualHourGuatemala > endDatePromotion){
-        promotionData.id = idPromo;
-        promotionData.set("Status",false);
-        promotionData.save();
-    };
-};
-
-Parse.Cloud.job("verifyFinalizedPromotions", function (request, status) {
-    // Connection with Hours Class for objectId
-    var query = new Parse.Query('Promotion');
-    // Take the Date of Guatemala City Country in long date
-    var actualHour = moment().tz("America/Guatemala").format('LLL');
-    query.equalTo("Status", true);
-
-    // Find the endDate in Hour class ClassName
-    query.find({
-        success: function(results) {
-            for (i in results) {
-                // Take the actualHour variable for send to changeStatus function
-                changeStatusPromotion(results[i].attributes.EndDate,results[i].id,actualHour);
-            };
-        },
-        error: function(error){
-            console.log(error);
-        }
-    }).then(function() {
-        // Set the job's success status
-        status.success("Verification completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    });;
-});
-// This function and verifyFinalizedCoupons cloud define, disable promotion when the date promotion end.
-function changeStatusCoupons(endHour,idPromo,actualHourCST) {
-  var couponClass = new Parse.Object.extend("Cupon");
-    var couponData = new couponClass();
-    var endDatePromotion = new Date(endHour);
-    var actualHourGuatemala = new Date(actualHourCST);
-    // Data validation (if actualHourGuatemala is major a endDatePromotion return false in status col in parse)
-    if(actualHourGuatemala > endDatePromotion){
-        couponData.id = idPromo;
-        couponData.set("Status",false);
-        couponData.save();
-    };
-};
-
-Parse.Cloud.job("verifyFinalizedCoupons", function (request, status) {
-    // Connection with Hours Class for objectId
-    var query = new Parse.Query('Cupon');
-    // Take the Date of Guatemala City Country in long date
-    var actualHour = moment().tz("America/Guatemala").format('LLL');
-    query.equalTo("TypeCoupon", "Fecha");
-    query.equalTo("Status", true);
-
-    // Find the endDate in Hour class ClassName
-    query.find({
-        success: function(results) {
-            for (i in results) {
-                // Take the actualHour variable for send to changeStatus function
-                changeStatusCoupons(results[i].attributes.EndDate,results[i].id,actualHour);
-            };
-        },
-        error: function(error){
-            console.log(error);
-        }
-
-    }).then(function() {
-        // Set the job's success status
-        status.success("Verification completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    });;
-});
-
 Parse.Cloud.beforeSave(Parse.User, function(request, response) {
     var user = request.object;
      if (user.get('authData') != {}){
@@ -143,7 +54,7 @@ function orderArray(array) {
     /* This for permit to parse the array */
     for (var i = 0; i < array.length; i++) {
 
-        /* Compare if valo in array[i} is diferent to previos value save in prev
+        /* Compare if value in array[i} is diferent to previos value save in prev
         if this don't exit create key and item but if exist only sum one more */
         if ( array[i] != prev ) {
             totalPromotion[array[i]] = 1;
@@ -156,335 +67,8 @@ function orderArray(array) {
 
     /* Return sort object */
     return totalPromotion
-}
+};
 
-// Get count of coupons for categories
-Parse.Cloud.job('QuantityPromotionsForCategories', function(request, status) {
-
-    /* Create query for search AppCategory */
-    var Category = new Parse.Query('AppCategory');
-
-    /* Create query for search Promotions */
-    var Promotion = new Parse.Query('Promotion');
-    Promotion.equalTo("Status",true);
-
-    var CountPromotionForCustomer = new Parse.Object.extend("AppCategory");
-    var CountPromotion = new CountPromotionForCustomer();
-
-    Category.each(function(CategoryResults) {
-
-      Promotion.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
-
-      return Promotion.count({
-          success: function(count) {
-              // The count request succeeded. Show the count
-              console.log(count);
-              CountPromotion.id = CategoryResults.id;
-              CountPromotion.set("QuantityPromotion",count);
-              return CountPromotion.save();
-            },
-            error: function(error) {
-              return "The request failed"
-            }
-      });
-    }).then(function() {
-        // Set the job's success status
-        status.success("Count completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    });
-});
-
-// Event "JOB" for calculate the count of promotions for each customer
-Parse.Cloud.job('QuantityPromotionsForCustomer', function(request, status){
-
-    /* Create query for search Customer */
-    var Customer = new Parse.Query('Customer');
-    /* Create query for search Promotions */
-    var Promotion = new Parse.Query('Promotion');
-
-    var CountPromotionForCustomer = new Parse.Object.extend("Customer");
-    var CountPromotion = new CountPromotionForCustomer();
-
-    Promotion.equalTo("Status",true)
-
-    Customer.each(function (CustomerResults) {
-
-        Promotion.equalTo("Customer", CustomerResults.get('Name'));
-
-        return Promotion.count({
-            success: function(count) {
-                // The count request succeeded. Show the count
-                CountPromotion.id = CustomerResults.id;
-                CountPromotion.set("QuantityPromotion",count);
-                return CountPromotion.save();
-            },
-            error: function(error) {
-                // The request failed
-            }
-        })
-    }).then(function() {
-        // Set the job's success status
-        status.success("Count completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    })
-});
-
-// Get count of coupons for categories
-Parse.Cloud.job('QuantityPromotionsForCoupons', function(request, status){
-
-    /* Create query for search AppCategory */
-    var Category = new Parse.Query('AppCategory');
-    /* Create query for search Promotions */
-    var Coupons = new Parse.Query('Cupon');
-    Coupons.equalTo("Status",true)
-
-    var CountCouponsEnt = new Parse.Object.extend("AppCategory");
-    var CountCoupons = new CountCouponsEnt();
-    /* Create query for search Cupones */
-
-    Category.each(function (CategoryResults) {
-        Coupons.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
-        return Coupons.count({
-            success: function(count) {
-                // The count request succeeded. Show the count
-                CountCoupons.id = CategoryResults.id;
-                CountCoupons.set("QuantityCoupon",count);
-                return CountCoupons.save();
-            },
-            error: function(error) {
-                // The request failed
-            }
-        })
-    }).then(function() {
-        // Set the job's success status
-        status.success("Count completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    })
-})
-
-// Event "JOB" for calculate the count of coupons for each customer
-Parse.Cloud.job('QuantityCouponsForCustomer', function(request, status){
-
-    /* Create query for search Customer */
-    var Customer = new Parse.Query('Customer');
-    /* Create query for search Coupons */
-    var Coupons = new Parse.Query('Cupon');
-
-    var CountCouponsForCustomer = new Parse.Object.extend("Customer");
-    var CountCoupons = new CountCouponsForCustomer();
-
-    Coupons.equalTo("Status",true)
-
-    Customer.each(function (CustomerResults) {
-
-        Coupons.equalTo("Customer", CustomerResults.get('Name'));
-
-        return Coupons.count({
-            success: function(count) {
-                // The count request succeeded. Show the count
-                CountCoupons.id = CustomerResults.id;
-                CountCoupons.set("QuantityCoupon",count);
-
-                return CountCoupons.save();
-            },
-            error: function(error) {
-                // The request failed
-            }
-        })
-    }).then(function() {
-        // Set the job's success status
-        status.success("Count completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    });
-});
-
-// Event "JOB" for calculate the total count of coupons for each customer
-Parse.Cloud.job('AverageSavingForCustomer', function(request, status){
-    /* Create query for search Customer */
-    var Customer = new Parse.Query('Customer');
-
-    /* Create query for search Promotions */
-    var Promotion = new Parse.Query('Promotion');
-    Promotion.equalTo("Status",true)
-
-    var Average = new Parse.Object.extend("Customer");
-    var AverageSave = new Average();
-
-    Customer.each(function (CustomerResults) {
-        console.log('entra a customer');
-        Promotion.equalTo("Customer", CustomerResults.get('Name'));
-
-        var count = 0
-        return Promotion.each(function(PromotionResults){
-            count = count +  PromotionResults.attributes.PromotionalPrice
-        }).then(function() {
-            AverageSave.id = CustomerResults.id;
-            var Promos = count/CustomerResults.attributes.QuantityPromotion
-            if (Promos) {
-              AverageSave.set("AverageSaving", Promos);
-              return AverageSave.save();
-            } else {
-              AverageSave.set("AverageSaving", 0);
-              return AverageSave.save();
-            };
-        }, function(error) {
-            console.log(error);
-        });
-    }).then(function() {
-        // Set the job's success status
-        status.success("Average completed successfully.");
-    }, function(error) {
-        // Set the job's error status
-        status.error("Uh oh, something went wrong.");
-    });
-});
-
-Parse.Cloud.define('GetCustomer', function(request, response) {
-    var CustomerList = [];
-    var Customer = new Parse.Query('Customer');
-
-    Customer.each(function(results) {
-        CustomerList.push({
-            name: results.attributes.Logo._url, promo: results.attributes.QuantityPromotion,promedio:results.attributes.AverageSaving,
-            lastText: "favorite", NameCategory: results.attributes.Name ,oferta : 'existe',
-            colorHeart: "white",Category:results.attributes.CategoryApp,coupon: results.attributes.QuantityCoupon
-        })
-    }).then(function () {
-          response.success(CustomerList);
-        });
-
-});
-/* Get and return an object for Promotions entity */
-Parse.Cloud.define('GetPromotionsApp', function(request, response) {
-    var CurrentPromotion = [];
-    var Promotion = new Parse.Query('Promotion');
-    // Search Promotions with status true
-    Promotion.equalTo('Status', true);
-
-    Promotion.each(function(results) {
-      for (i in results.attributes.Customer) {
-          if(results.attributes.Photo === null || results.attributes.Photo === undefined){
-              CurrentPromotion.push({
-                  nul:"sin",
-                  name:results.attributes.Name,
-                  presentation:results.attributes.Presentation,
-                  description:results.attributes.PromotionDescription,
-                  basePrice:results.attributes.BasePrice,
-                  promotionalPrice:results.attributes.PromotionalPrice,
-                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
-                  Category:results.attributes.Customer[i],
-                  ID:"pinOffertsWithoutImage",
-                  IDpromotion: results.id,
-                  conteo:0,
-                  oferta:"existe",
-                  Our_Favorites:results.attributes.OurFavorite,
-                  PhotoFavorite: results.attributes.PhotoFavorite,
-                  Logo:"",
-                  ColorPin: "silver",
-                  ShopOnline:results.attributes.ShopOnline,
-                  IconShopOnline: "j",
-                  Display: "",
-              });
-          } else {
-              CurrentPromotion.push({
-                  nul:"con",
-                  photo:results.attributes.Photo._url,
-                  name:results.attributes.Name,
-                  presentation:results.attributes.Presentation,
-                  description:results.attributes.PromotionDescription,
-                  basePrice:results.attributes.BasePrice,
-                  promotionalPrice:results.attributes.PromotionalPrice,
-                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
-                  Category:results.attributes.Customer[i],
-                  ID:"pinOfferts",
-                  IDpromotion: results.id,
-                  conteo:0,
-                  oferta:"existe",
-                  Our_Favorites:results.attributes.OurFavorite,
-                  PhotoFavorite: results.attributes.PhotoFavorite,
-                  Logo:"",
-                  ColorPin: "silver",
-                  ShopOnline:results.attributes.ShopOnline,
-                  IconShopOnline: "j",
-                  Display: "",
-              });
-          }
-      }
-    }).then(function () {
-        response.success(CurrentPromotion);
-    });
-});
-/* Get and return an object for Coupons entity */
-Parse.Cloud.define('GetCouponsApp', function(request, response) {
-    var CurrentCoupons = [];
-    var Coupons = new Parse.Query('Cupon');
-    // Search Coupons with status true
-    Coupons.equalTo('Status', true);
-
-    Coupons.each(function(results) {
-        for (i in results.attributes.Customer) {
-            if(results.attributes.PhotoCupon === null || results.attributes.PhotoCupon === undefined){
-                CurrentCoupons.push({
-                    nul:"sin",
-                    name:results.attributes.Name,
-                    description:results.attributes.PromotionDescription,
-                    Canjea:results.attributes.CuponDiscount,
-                    Category:results.attributes.Customer[i],
-                    cupon:"existe",
-                    ColorPinCupon: "silver",
-                    BarCodePhoto:results.attributes.BarCodePhoto,
-                    Presentation:results.attributes.Presentation,
-                    description:results.attributes.PromotionDescription,
-                    customer:results.attributes.Customer[i],
-                    PhotoCupon:results.attributes.PhotoCupon,
-                    Publication_Date:results.attributes.PublicationDate,
-                    End_Date:results.attributes.EndDate,
-                    IDCupon:results.id,
-                    Categoryapp:results.attributes.CategoryApp,
-                    TypeCoupon:results.attributes.TypeCoupon,
-                    QuantityCoupons:results.attributes.QuantityCoupons,
-                    QuantityExchanged:results.attributes.QuantityExchanged,
-                    ShopOnline:results.attributes.ShopOnline,
-                    Display:"",
-              });
-          } else {
-              CurrentCoupons.push({
-                  nul:"con",
-                  name:results.attributes.Name,
-                  description:results.attributes.PromotionDescription,
-                  Canjea:results.attributes.CuponDiscount,
-                  Category:results.attributes.Customer[i],
-                  cupon:"existe",
-                  ColorPinCupon: "silver",
-                  BarCodePhoto:results.attributes.BarCodePhoto,
-                  Presentation:results.attributes.Presentation,
-                  description:results.attributes.PromotionDescription,
-                  customer:results.attributes.Customer[i],
-                  PhotoCupon:results.attributes.PhotoCupon,
-                  Publication_Date:results.attributes.PublicationDate,
-                  End_Date:results.attributes.EndDate,
-                  IDCupon:results.id,
-                  Categoryapp:results.attributes.CategoryApp,
-                  TypeCoupon:results.attributes.TypeCoupon,
-                  QuantityCoupons:results.attributes.QuantityCoupons,
-                  QuantityExchanged:results.attributes.QuantityExchanged,
-                  ShopOnline:results.attributes.ShopOnline,
-                  Display:"",
-              });
-          }
-      }
-    }).then(function() {
-        response.success(CurrentCoupons);
-    });
-});
 /*This functions returns an array with the name of promotions and customers*/
 Parse.Cloud.define("GetPromotions", function(request, response) {
     /* Crate query for search promotions */
@@ -877,4 +461,457 @@ Parse.Cloud.define("deleteFavoriteCupon",function(request,response){
             response.success("Favorite Promotion Removed to PromotionSaved class");
         }
     });
+});
+
+// This call to external library of moment-timezone.js for select a country time.
+var moment = require('cloud/moment-timezone.js');
+// Contain the countries with Date/Time
+moment.tz.add(require('cloud/moment-timezone-with-data.js'));
+// Add (Date/Time) Guatemala country
+moment.tz.add('America/Guatemala|LMT CST CDT|62.4 60 50|0121212121|-24KhV.U 2efXV.U An0 mtd0 Nz0 ifB0 17b0 zDB0 11z0');
+// This function and verifyFinalizedPromotions cloud define, disable promotion when the date promotion end.
+function changeStatusPromotion(endHour,idPromo,actualHourCST) {
+  var promotionClass = new Parse.Object.extend("Promotion");
+    var promotionData = new promotionClass();
+    var endDatePromotion = new Date(endHour);
+    var actualHourGuatemala = new Date(actualHourCST);
+    // Data validation (if actualHourGuatemala is major a endDatePromotion return false in status col in parse)
+    if(actualHourGuatemala > endDatePromotion){
+        promotionData.id = idPromo;
+        promotionData.set("Status",false);
+        promotionData.save();
+    };
+};
+
+Parse.Cloud.job("verifyFinalizedPromotions", function (request, status) {
+    // Connection with Hours Class for objectId
+    var query = new Parse.Query('Promotion');
+    // Take the Date of Guatemala City Country in long date
+    var actualHour = moment().tz("America/Guatemala").format('LLL');
+    query.equalTo("Status", true);
+
+    // Find the endDate in Hour class ClassName
+    query.find({
+        success: function(results) {
+            for (i in results) {
+                // Take the actualHour variable for send to changeStatus function
+                changeStatusPromotion(results[i].attributes.EndDate,results[i].id,actualHour);
+            };
+        },
+        error: function(error){
+            console.log(error);
+        }
+    }).then(function() {
+        // Set the job's success status
+        status.success("Verification completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    });;
+});
+// This function and verifyFinalizedCoupons cloud define, disable promotion when the date promotion end.
+function changeStatusCoupons(endHour,idPromo,actualHourCST) {
+  var couponClass = new Parse.Object.extend("Cupon");
+    var couponData = new couponClass();
+    var endDatePromotion = new Date(endHour);
+    var actualHourGuatemala = new Date(actualHourCST);
+    // Data validation (if actualHourGuatemala is major a endDatePromotion return false in status col in parse)
+    if(actualHourGuatemala > endDatePromotion){
+        couponData.id = idPromo;
+        couponData.set("Status",false);
+        couponData.save();
+    };
+};
+
+Parse.Cloud.job("verifyFinalizedCoupons", function (request, status) {
+    // Connection with Hours Class for objectId
+    var query = new Parse.Query('Cupon');
+    // Take the Date of Guatemala City Country in long date
+    var actualHour = moment().tz("America/Guatemala").format('LLL');
+    query.equalTo("TypeCoupon", "Fecha");
+    query.equalTo("Status", true);
+
+    // Find the endDate in Hour class ClassName
+    query.find({
+        success: function(results) {
+            for (i in results) {
+                // Take the actualHour variable for send to changeStatus function
+                changeStatusCoupons(results[i].attributes.EndDate,results[i].id,actualHour);
+            };
+        },
+        error: function(error){
+            console.log(error);
+        }
+
+    }).then(function() {
+        // Set the job's success status
+        status.success("Verification completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    });;
+});
+
+// Get count of coupons for categories
+Parse.Cloud.job('QuantityPromotionsForCategories', function(request, status) {
+
+    /* Create query for search AppCategory */
+    var Category = new Parse.Query('AppCategory');
+
+    /* Create query for search Promotions */
+    var Promotion = new Parse.Query('Promotion');
+    Promotion.equalTo("Status",true);
+
+    var CountPromotionForCustomer = new Parse.Object.extend("AppCategory");
+    var CountPromotion = new CountPromotionForCustomer();
+
+    Category.each(function(CategoryResults) {
+
+      Promotion.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
+
+      return Promotion.count({
+          success: function(count) {
+              // The count request succeeded. Show the count
+              console.log(count);
+              CountPromotion.id = CategoryResults.id;
+              CountPromotion.set("QuantityPromotion",count);
+              return CountPromotion.save();
+            },
+            error: function(error) {
+              return "The request failed"
+            }
+      });
+    }).then(function() {
+        // Set the job's success status
+        status.success("Count completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    });
+});
+
+// Event "JOB" for calculate the count of promotions for each customer
+Parse.Cloud.job('QuantityPromotionsForCustomer', function(request, status){
+
+    /* Create query for search Customer */
+    var Customer = new Parse.Query('Customer');
+    /* Create query for search Promotions */
+    var Promotion = new Parse.Query('Promotion');
+
+    var CountPromotionForCustomer = new Parse.Object.extend("Customer");
+    var CountPromotion = new CountPromotionForCustomer();
+
+    Promotion.equalTo("Status",true)
+
+    Customer.each(function (CustomerResults) {
+
+        Promotion.equalTo("Customer", CustomerResults.get('Name'));
+
+        return Promotion.count({
+            success: function(count) {
+                // The count request succeeded. Show the count
+                CountPromotion.id = CustomerResults.id;
+                CountPromotion.set("QuantityPromotion",count);
+                return CountPromotion.save();
+            },
+            error: function(error) {
+                // The request failed
+            }
+        })
+    }).then(function() {
+        // Set the job's success status
+        status.success("Count completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    })
+});
+
+// Get count of coupons for categories
+Parse.Cloud.job('QuantityPromotionsForCoupons', function(request, status){
+
+    /* Create query for search AppCategory */
+    var Category = new Parse.Query('AppCategory');
+    /* Create query for search Promotions */
+    var Coupons = new Parse.Query('Cupon');
+    Coupons.equalTo("Status",true)
+
+    var CountCouponsEnt = new Parse.Object.extend("AppCategory");
+    var CountCoupons = new CountCouponsEnt();
+    /* Create query for search Cupones */
+
+    Category.each(function (CategoryResults) {
+        Coupons.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
+        return Coupons.count({
+            success: function(count) {
+                // The count request succeeded. Show the count
+                CountCoupons.id = CategoryResults.id;
+                CountCoupons.set("QuantityCoupon",count);
+                return CountCoupons.save();
+            },
+            error: function(error) {
+                // The request failed
+            }
+        })
+    }).then(function() {
+        // Set the job's success status
+        status.success("Count completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    })
+})
+
+// Event "JOB" for calculate the count of coupons for each customer
+Parse.Cloud.job('QuantityCouponsForCustomer', function(request, status){
+
+    /* Create query for search Customer */
+    var Customer = new Parse.Query('Customer');
+    /* Create query for search Coupons */
+    var Coupons = new Parse.Query('Cupon');
+
+    var CountCouponsForCustomer = new Parse.Object.extend("Customer");
+    var CountCoupons = new CountCouponsForCustomer();
+
+    Coupons.equalTo("Status",true)
+
+    Customer.each(function (CustomerResults) {
+
+        Coupons.equalTo("Customer", CustomerResults.get('Name'));
+
+        return Coupons.count({
+            success: function(count) {
+                // The count request succeeded. Show the count
+                CountCoupons.id = CustomerResults.id;
+                CountCoupons.set("QuantityCoupon",count);
+
+                return CountCoupons.save();
+            },
+            error: function(error) {
+                // The request failed
+            }
+        })
+    }).then(function() {
+        // Set the job's success status
+        status.success("Count completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    });
+});
+
+// Event "JOB" for calculate the total count of coupons for each customer
+Parse.Cloud.job('AverageSavingForCustomer', function(request, status){
+    /* Create query for search Customer */
+    var Customer = new Parse.Query('Customer');
+
+    /* Create query for search Promotions */
+    var Promotion = new Parse.Query('Promotion');
+    Promotion.equalTo("Status",true)
+
+    var Average = new Parse.Object.extend("Customer");
+    var AverageSave = new Average();
+
+    Customer.each(function (CustomerResults) {
+        console.log('entra a customer');
+        Promotion.equalTo("Customer", CustomerResults.get('Name'));
+
+        var count = 0
+        return Promotion.each(function(PromotionResults){
+            count = count +  PromotionResults.attributes.PromotionalPrice
+        }).then(function() {
+            AverageSave.id = CustomerResults.id;
+            var Promos = count/CustomerResults.attributes.QuantityPromotion
+            if (Promos) {
+              AverageSave.set("AverageSaving", Promos);
+              return AverageSave.save();
+            } else {
+              AverageSave.set("AverageSaving", 0);
+              return AverageSave.save();
+            };
+        }, function(error) {
+            console.log(error);
+        });
+    }).then(function() {
+        // Set the job's success status
+        status.success("Average completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Uh oh, something went wrong.");
+    });
+});
+
+Parse.Cloud.define('GetCustomer', function(request, response) {
+    var CustomerList = [];
+    var Customer = new Parse.Query('Customer');
+
+    Customer.each(function(results) {
+        CustomerList.push({
+            name: results.attributes.Logo._url, promo: results.attributes.QuantityPromotion,promedio:results.attributes.AverageSaving,
+            lastText: "favorite", NameCategory: results.attributes.Name ,oferta : 'existe',
+            colorHeart: "white",Category:results.attributes.CategoryApp,coupon: results.attributes.QuantityCoupon
+        })
+    }).then(function () {
+          response.success(CustomerList);
+        });
+
+});
+/* Get and return an object for Promotions entity */
+Parse.Cloud.define('GetPromotionsApp', function(request, response) {
+    var CurrentPromotion = [];
+    var Promotion = new Parse.Query('Promotion');
+    // Search Promotions with status true
+    Promotion.equalTo('Status', true);
+
+    Promotion.each(function(results) {
+      for (i in results.attributes.Customer) {
+          if(results.attributes.Photo === null || results.attributes.Photo === undefined){
+              CurrentPromotion.push({
+                  nul:"sin",
+                  name:results.attributes.Name,
+                  presentation:results.attributes.Presentation,
+                  description:results.attributes.PromotionDescription,
+                  basePrice:results.attributes.BasePrice,
+                  promotionalPrice:results.attributes.PromotionalPrice,
+                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
+                  Category:results.attributes.Customer[i],
+                  ID:"pinOffertsWithoutImage",
+                  IDpromotion: results.id,
+                  conteo:0,
+                  oferta:"existe",
+                  Our_Favorites:results.attributes.OurFavorite,
+                  PhotoFavorite: results.attributes.PhotoFavorite,
+                  Logo:"",
+                  ColorPin: "silver",
+                  ShopOnline:results.attributes.ShopOnline,
+                  IconShopOnline: "j",
+                  Display: "",
+              });
+          } else {
+              CurrentPromotion.push({
+                  nul:"con",
+                  photo:results.attributes.Photo._url,
+                  name:results.attributes.Name,
+                  presentation:results.attributes.Presentation,
+                  description:results.attributes.PromotionDescription,
+                  basePrice:results.attributes.BasePrice,
+                  promotionalPrice:results.attributes.PromotionalPrice,
+                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
+                  Category:results.attributes.Customer[i],
+                  ID:"pinOfferts",
+                  IDpromotion: results.id,
+                  conteo:0,
+                  oferta:"existe",
+                  Our_Favorites:results.attributes.OurFavorite,
+                  PhotoFavorite: results.attributes.PhotoFavorite,
+                  Logo:"",
+                  ColorPin: "silver",
+                  ShopOnline:results.attributes.ShopOnline,
+                  IconShopOnline: "j",
+                  Display: "",
+              });
+          }
+      }
+    }).then(function () {
+        response.success(CurrentPromotion);
+    });
+});
+/* Get and return an object for Coupons entity */
+Parse.Cloud.define('GetCouponsApp', function(request, response) {
+    var CurrentCoupons = [];
+    var Coupons = new Parse.Query('Cupon');
+    // Search Coupons with status true
+    Coupons.equalTo('Status', true);
+
+    Coupons.each(function(results) {
+        for (i in results.attributes.Customer) {
+            if(results.attributes.PhotoCupon === null || results.attributes.PhotoCupon === undefined){
+                CurrentCoupons.push({
+                    nul:"sin",
+                    name:results.attributes.Name,
+                    description:results.attributes.PromotionDescription,
+                    Canjea:results.attributes.CuponDiscount,
+                    Category:results.attributes.Customer[i],
+                    cupon:"existe",
+                    ColorPinCupon: "silver",
+                    BarCodePhoto:results.attributes.BarCodePhoto,
+                    Presentation:results.attributes.Presentation,
+                    description:results.attributes.PromotionDescription,
+                    customer:results.attributes.Customer[i],
+                    PhotoCupon:results.attributes.PhotoCupon,
+                    Publication_Date:results.attributes.PublicationDate,
+                    End_Date:results.attributes.EndDate,
+                    IDCupon:results.id,
+                    Categoryapp:results.attributes.CategoryApp,
+                    TypeCoupon:results.attributes.TypeCoupon,
+                    QuantityCoupons:results.attributes.QuantityCoupons,
+                    QuantityExchanged:results.attributes.QuantityExchanged,
+                    ShopOnline:results.attributes.ShopOnline,
+                    Display:"",
+              });
+          } else {
+              CurrentCoupons.push({
+                  nul:"con",
+                  name:results.attributes.Name,
+                  description:results.attributes.PromotionDescription,
+                  Canjea:results.attributes.CuponDiscount,
+                  Category:results.attributes.Customer[i],
+                  cupon:"existe",
+                  ColorPinCupon: "silver",
+                  BarCodePhoto:results.attributes.BarCodePhoto,
+                  Presentation:results.attributes.Presentation,
+                  description:results.attributes.PromotionDescription,
+                  customer:results.attributes.Customer[i],
+                  PhotoCupon:results.attributes.PhotoCupon,
+                  Publication_Date:results.attributes.PublicationDate,
+                  End_Date:results.attributes.EndDate,
+                  IDCupon:results.id,
+                  Categoryapp:results.attributes.CategoryApp,
+                  TypeCoupon:results.attributes.TypeCoupon,
+                  QuantityCoupons:results.attributes.QuantityCoupons,
+                  QuantityExchanged:results.attributes.QuantityExchanged,
+                  ShopOnline:results.attributes.ShopOnline,
+                  Display:"",
+              });
+          }
+      }
+    }).then(function() {
+        response.success(CurrentCoupons);
+    });
+});
+
+Parse.Cloud.define('runJobCountCouponCostumer', function(request, response) {
+  Parse.Cloud.httpRequest({
+    url: 'https://api.parse.com/1/jobs/QuantityCouponsForCustomer',
+    headers: {
+              'Content-Type':'application/json',
+              'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
+              'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
+              'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
+    },
+    method: 'POST',
+    body : {}
+  }).then(function(httpResponse) {
+    response.success(httpResponse);
+  }, function(err) {
+    response.error(err);
+  });
+});
+
+Parse.Cloud.define('runJobCountCouponCategories', function(request, response) {
+  Parse.Cloud.httpRequest({
+    url: 'https://api.parse.com/1/jobs/QuantityPromotionsForCoupons',
+    headers: {
+              'Content-Type':'application/json',
+              'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
+              'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
+              'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
+    },
+    method: 'POST',
+    body : {}
+  }).then(function(httpResponse) {
+    response.success(httpResponse);
+  }, function(err) {
+    response.error(err);
+  });
 });
