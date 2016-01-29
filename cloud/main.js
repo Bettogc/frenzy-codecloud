@@ -879,39 +879,39 @@ Parse.Cloud.define('GetCouponsApp', function(request, response) {
         response.success(CurrentCoupons);
     });
 });
-
-Parse.Cloud.define('runJobCountCouponCostumer', function(request, response) {
-  Parse.Cloud.httpRequest({
-    url: 'https://api.parse.com/1/jobs/QuantityCouponsForCustomer',
-    headers: {
-              'Content-Type':'application/json',
-              'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
-              'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
-              'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
-    },
-    method: 'POST',
-    body : {}
-  }).then(function(httpResponse) {
-    response.success(httpResponse);
-  }, function(err) {
-    response.error(err);
-  });
-});
-
-Parse.Cloud.define('runJobCountCouponCategories', function(request, response) {
-  Parse.Cloud.httpRequest({
-    url: 'https://api.parse.com/1/jobs/QuantityPromotionsForCoupons',
-    headers: {
-              'Content-Type':'application/json',
-              'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
-              'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
-              'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
-    },
-    method: 'POST',
-    body : {}
-  }).then(function(httpResponse) {
-    response.success(httpResponse);
-  }, function(err) {
-    response.error(err);
-  });
-});
+/* http request for callback CountCouponCustomer by means of job work */
+function CountCouponCustomer(request, response) {
+    Parse.Cloud.httpRequest({
+        url: 'https://api.parse.com/1/jobs/QuantityCouponsForCustomer',
+        headers: {
+            'Content-Type':'application/json',
+            'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
+            'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
+            'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
+        },
+        method: 'POST',
+        body : {}
+    }).then(function(httpResponse) {
+        response.success(httpResponse);
+    }, function(err) {
+        response.error(err);
+    });
+}
+/* http request for callback CountCouponCategories by means of job work */
+function CountCouponCategories(request, response){
+    Parse.Cloud.httpRequest({
+        url: 'https://api.parse.com/1/jobs/QuantityPromotionsForCoupons',
+        headers: {
+            'Content-Type':'application/json',
+            'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
+            'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
+            'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
+        },
+        method: 'POST',
+        body : {}
+    }).then(function(httpResponse) {
+        response.success(httpResponse);
+    }, function(err) {
+        response.error(err);
+    });
+}
