@@ -242,13 +242,30 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
 
     query.find({
         success: function(results) {
+
+          CustomerIDComparative = results[0].attributes.CustomerID;
+          //CustomerIDComparative = CustomerIDComparative.toString();
             /*if length is greater that 0 the user exist*/
             if (results.length > 0) {
-                /*Edit user*/
-                response.success(saveFavorite(results[0].id,Data.UserID,Data.CustomerID));
+
+                  if(CustomerIDComparative === Data.CustomerID){
+                      console.log('es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                  } else {
+                      /*Edit user*/
+                      console.log('no es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                      response.success(saveFavorite(results[0].id,Data.UserID,Data.CustomerID));
+                  }
+
             } else {
-                /*Save new user*/
-                response.success(saveFavorite(null,Data.UserID,Data.CustomerID));
+
+                    if(CustomerIDComparative === Data.CustomerID) {
+                        console.log('es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                    } else {
+                        console.log('no es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                        /*Save new user*/
+                        response.success(saveFavorite(null,Data.UserID,Data.CustomerID));
+                    }
+
             };
 
         },
