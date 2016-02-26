@@ -489,9 +489,13 @@ function changeStatusPromotion(endHour,idPromo,actualHourCST) {
     var actualHourGuatemala = new Date(actualHourCST);
     // Data validation (if actualHourGuatemala is major a endDatePromotion return false in status col in parse)
     if(actualHourGuatemala > endDatePromotion){
-        promotionData.id = idPromo;
-        promotionData.set("Status",false);
-        promotionData.save();
+      promotionData.id = idPromo;
+      promotionData.set("Status",false);
+      promotionData.save();
+    } else {
+      promotionData.id = idPromo;
+      promotionData.set("Status",true);
+      promotionData.save();
     };
 };
 
@@ -529,9 +533,13 @@ function changeStatusCoupons(endHour,idPromo,actualHourCST) {
     var actualHourGuatemala = new Date(actualHourCST);
     // Data validation (if actualHourGuatemala is major a endDatePromotion return false in status col in parse)
     if(actualHourGuatemala > endDatePromotion){
-        couponData.id = idPromo;
-        couponData.set("Status",false);
-        couponData.save();
+      couponData.id = idPromo;
+      couponData.set("Status",false);
+      couponData.save();
+    } else {
+      couponData.id = idPromo;
+      couponData.set("Status",true);
+      couponData.save();
     };
 };
 
