@@ -242,32 +242,21 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
 
     query.find({
         success: function(results) {
-
           CustomerIDComparative = results[0].attributes.CustomerID;
           //CustomerIDComparative = CustomerIDComparative.toString();
             /*if length is greater that 0 the user exist*/
             if (results.length > 0) {
-
-                  if(CustomerIDComparative === Data.CustomerID){
-                      console.log('es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
-                  } else {
-                      /*Edit user*/
-                      console.log('no es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
-                      response.success(saveFavorite(results[0].id,Data.UserID,Data.CustomerID));
-                  }
-
+              /*Find the customer in favorite class to not repeat the save*/
+              if(CustomerIDComparative.indexOf(Data.CustomerID) === -1){
+                  /*Edit user*/
+                  response.success(saveFavorite(results[0].id,Data.UserID,Data.CustomerID));
+              } else {
+                response.success("Ya existe como favorito")
+              }
             } else {
-
-                    if(CustomerIDComparative === Data.CustomerID) {
-                        console.log('es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
-                    } else {
-                        console.log('no es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
-                        /*Save new user*/
-                        response.success(saveFavorite(null,Data.UserID,Data.CustomerID));
-                    }
-
+              /*Save new user*/
+              response.success(saveFavorite(null,Data.UserID,Data.CustomerID));
             };
-
         },
         error: function(error) {
             response.error(error);
@@ -349,14 +338,20 @@ Parse.Cloud.define("SavePromotion", function(request, response) {
 
     query.find({
         success: function(results) {
-            /*if length is greater that 0 the user exist*/
-            if (results.length > 0) {
-                /*Edit user*/
-                response.success(savePromotion(results[0].id,Data.UserID,Data.PromotionID));
+          PromotionIDComparative = results[0].attributes.PromotionID;
+          /*if length is greater that 0 the user exist*/
+          if (results.length > 0) {
+            /*Find the promotionID in savePromotion class to not repeat the save*/
+            if(PromotionIDComparative.indexOf(Data.PromotionID) === -1){
+              /*Edit user*/
+              response.success(savePromotion(results[0].id,Data.UserID,Data.PromotionID));
             } else {
-                /*Save new user*/
-                response.success(savePromotion(null,Data.UserID,Data.PromotionID));
-            };
+              response.success("Ya existe como salvado");
+            }
+          } else {
+              /*Save new user*/
+              response.success(savePromotion(null,Data.UserID,Data.PromotionID));
+          };
         },
         error: function(error) {
             response.error(error);
@@ -824,8 +819,8 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                       ColorPin: "silver",
                       ShopOnline:results.attributes.ShopOnline,
                       IconShopOnline: "j",
-                      // Display for carrito de frenzy
-                      Display: "",
+                      // Display for cart
+                      Display: ""
                   });
             } else if(results.attributes.TypePromotion === 'Percentage'){
                 CurrentPromotion.push({
@@ -847,12 +842,8 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                     ColorPin: "silver",
                     ShopOnline:results.attributes.ShopOnline,
                     IconShopOnline: "j",
-                    // Display for carrito de frenzy
-                    Display: "",
-                    marginTop: '3px',
-                    /*textAlign: 'center',*/
-                    marginLeft: '11px',
-                    fontSize: '20px',
+                    // Display for cart
+                    Display: ""
                 });
             } else if(results.attributes.TypePromotion === 'SpecialPromotion'){
 
@@ -863,7 +854,6 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                     description:results.attributes.PromotionDescription,
                     display: 'none',
                     promotionalPrice:'Promoción Especial',
-                    fontSize: '10px',
                     TypePromotion:results.attributes.TypePromotion,
                     Category:results.attributes.Customer[i],
                     ID:"pinOfferts",
@@ -876,7 +866,7 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                     ColorPin: "silver",
                     ShopOnline:results.attributes.ShopOnline,
                     IconShopOnline: "j",
-                    // Display for carrito de frenzy
+                    // Display cart
                     Display: "",
                     icon: 'c'
                 });
@@ -914,8 +904,8 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                         ColorPin: "silver",
                         ShopOnline:results.attributes.ShopOnline,
                         IconShopOnline: "j",
-                        // Display for carrito de frenzy
-                        Display: "",
+                        // Display for cart
+                        Display: ""
                     });
               } else if(results.attributes.TypePromotion === 'Percentage'){
                   CurrentPromotion.push({
@@ -938,13 +928,8 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                       ColorPin: "silver",
                       ShopOnline:results.attributes.ShopOnline,
                       IconShopOnline: "j",
-                      // Display for carrito de frenzy
-                      Display: "",
-                      Display: "",
-                      marginTop: '3px',
-                      /*textAlign: 'center',*/
-                      marginLeft: '11px',
-                      fontSize: '20px'
+                      // Display for the cart
+                      Display: ""
                   });
               } else if(results.attributes.TypePromotion === 'SpecialPromotion'){
                   CurrentPromotion.push({
@@ -954,7 +939,6 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                       presentation:results.attributes.Presentation,
                       description:results.attributes.PromotionDescription,
                       display: 'none',
-                      fontSize: '10px',
                       promotionalPrice:'Promoción Especial',
                       TypePromotion:results.attributes.TypePromotion,
                       Category:results.attributes.Customer[i],
@@ -968,8 +952,8 @@ Parse.Cloud.define('GetPromotionsApp', function(request, response) {
                       ColorPin: "silver",
                       ShopOnline:results.attributes.ShopOnline,
                       IconShopOnline: "j",
-                      // Display for carrito de frenzy
-                      Display: "",
+                      // Display for cart
+                      Display: ""
                   });
               }
           }
