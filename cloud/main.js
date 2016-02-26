@@ -242,13 +242,30 @@ Parse.Cloud.define("SaveFavorite", function(request, response) {
 
     query.find({
         success: function(results) {
+
+          CustomerIDComparative = results[0].attributes.CustomerID;
+          //CustomerIDComparative = CustomerIDComparative.toString();
             /*if length is greater that 0 the user exist*/
             if (results.length > 0) {
-                /*Edit user*/
-                response.success(saveFavorite(results[0].id,Data.UserID,Data.CustomerID));
+
+                  if(CustomerIDComparative === Data.CustomerID){
+                      console.log('es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                  } else {
+                      /*Edit user*/
+                      console.log('no es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                      response.success(saveFavorite(results[0].id,Data.UserID,Data.CustomerID));
+                  }
+
             } else {
-                /*Save new user*/
-                response.success(saveFavorite(null,Data.UserID,Data.CustomerID));
+
+                    if(CustomerIDComparative === Data.CustomerID) {
+                        console.log('es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                    } else {
+                        console.log('no es igual -----------' + CustomerIDComparative + ' ' + Data.CustomerID);
+                        /*Save new user*/
+                        response.success(saveFavorite(null,Data.UserID,Data.CustomerID));
+                    }
+
             };
 
         },
@@ -718,12 +735,13 @@ Parse.Cloud.job('AverageSavingForCustomer', function(request, status){
 
         var count = 0
         return Promotion.each(function(PromotionResults){
-            count = count +  PromotionResults.attributes.PromotionalPrice
+            count = count +  PromotionResults.attributes.PromotionalPrice;
         }).then(function() {
             AverageSave.id = CustomerResults.id;
-            var Promos = count/CustomerResults.attributes.QuantityPromotion
+            var Promos = count/CustomerResults.attributes.QuantityPromotion;
+            var countTwoDecimals = Promos.toFixed(2);
             if (Promos) {
-              AverageSave.set("AverageSaving", Promos);
+              AverageSave.set("AverageSaving", parseFloat(countTwoDecimals));
               return AverageSave.save();
             } else {
               AverageSave.set("AverageSaving", 0);
@@ -747,70 +765,217 @@ Parse.Cloud.define('GetCustomer', function(request, response) {
 
     Customer.each(function(results) {
         CustomerList.push({
-            name: results.attributes.Logo._url, promo: results.attributes.QuantityPromotion,promedio:results.attributes.AverageSaving,
-            lastText: "favorite", NameCategory: results.attributes.Name ,oferta : 'existe',
-            colorHeart: "white",Category:results.attributes.CategoryApp,coupon: results.attributes.QuantityCoupon
+            name: results.attributes.Logo._url,
+            promo: results.attributes.QuantityPromotion,
+            promedio: results.attributes.AverageSaving,
+            lastText: "favorite", NameCategory: results.attributes.Name,
+            oferta : 'existe',
+            colorHeart: "white",
+            Category:results.attributes.CategoryApp,
+            coupon: results.attributes.QuantityCoupon
         })
     }).then(function () {
           response.success(CustomerList);
         });
 
 });
+
 /* Get and return an object for Promotions entity */
 Parse.Cloud.define('GetPromotionsApp', function(request, response) {
     var CurrentPromotion = [];
     var Promotion = new Parse.Query('Promotion');
+
+    var Customer = new Parse.Query('Customer');
+
     // Search Promotions with status true
     Promotion.equalTo('Status', true);
 
     Promotion.each(function(results) {
       for (i in results.attributes.Customer) {
           if(results.attributes.Photo === null || results.attributes.Photo === undefined){
-              CurrentPromotion.push({
-                  nul:"sin",
-                  name:results.attributes.Name,
-                  presentation:results.attributes.Presentation,
-                  description:results.attributes.PromotionDescription,
-                  basePrice:results.attributes.BasePrice,
-                  promotionalPrice:results.attributes.PromotionalPrice,
-                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
-                  Category:results.attributes.Customer[i],
-                  ID:"pinOffertsWithoutImage",
-                  IDpromotion: results.id,
-                  conteo:0,
-                  oferta:"existe",
-                  Our_Favorites:results.attributes.OurFavorite,
-                  PhotoFavorite: results.attributes.PhotoFavorite,
-                  Logo:"",
-                  ColorPin: "silver",
-                  ShopOnline:results.attributes.ShopOnline,
-                  IconShopOnline: "j",
-                  Display: "",
-              });
+
+              if(results.attributes.TypePromotion === 'DirectDiscount'){
+                var ahorroString = results.attributes.BasePrice - results.attributes.PromotionalPrice;
+                var basePriceString = results.attributes.BasePrice;
+                var promotionalPriceString = results.attributes.PromotionalPrice;
+                ahorroString = ahorroString.toString();
+                basePriceString = basePriceString.toString();
+                promotionalPriceString = promotionalPriceString.toString();
+
+                  CurrentPromotion.push({
+                      nul:"sin",
+                      name:results.attributes.Name,
+                      presentation:results.attributes.Presentation,
+                      description:results.attributes.PromotionDescription,
+                      basePrice:'Q'+ basePriceString,
+                      promotionalPrice:'Q'+ promotionalPriceString,
+                      textDiscount: 'Ahorra',
+                      ahorro:'Q'+ ahorroString,
+                      before: 'Antes',
+                      TypePromotion:results.attributes.TypePromotion,
+                      Category:results.attributes.Customer[i],
+                      ID:"pinOfferts",
+                      IDpromotion: results.id,
+                      conteo:0,
+                      oferta:"existe",
+                      Our_Favorites:results.attributes.OurFavorite,
+                      PhotoFavorite: results.attributes.PhotoFavorite,
+                      Logo:"",
+                      ColorPin: "silver",
+                      ShopOnline:results.attributes.ShopOnline,
+                      IconShopOnline: "j",
+                      // Display for carrito de frenzy
+                      Display: "",
+                  });
+            } else if(results.attributes.TypePromotion === 'Percentage'){
+                CurrentPromotion.push({
+                    nul:"sin",
+                    name:results.attributes.Name,
+                    presentation:results.attributes.Presentation,
+                    description:results.attributes.PromotionDescription,
+                    promotionalPrice:'Descuento Especial',
+                    ahorro:results.attributes.Percentage + '%',
+                    TypePromotion:results.attributes.TypePromotion,
+                    Category:results.attributes.Customer[i],
+                    ID:"pinOfferts",
+                    IDpromotion: results.id,
+                    conteo:0,
+                    oferta:"existe",
+                    Our_Favorites:results.attributes.OurFavorite,
+                    PhotoFavorite: results.attributes.PhotoFavorite,
+                    Logo:"",
+                    ColorPin: "silver",
+                    ShopOnline:results.attributes.ShopOnline,
+                    IconShopOnline: "j",
+                    // Display for carrito de frenzy
+                    Display: "",
+                    marginTop: '3px',
+                    /*textAlign: 'center',*/
+                    marginLeft: '11px',
+                    fontSize: '20px',
+                });
+            } else if(results.attributes.TypePromotion === 'SpecialPromotion'){
+
+                CurrentPromotion.push({
+                    nul:"sin",
+                    name:results.attributes.Name,
+                    presentation:results.attributes.Presentation,
+                    description:results.attributes.PromotionDescription,
+                    display: 'none',
+                    promotionalPrice:'Promoción Especial',
+                    fontSize: '10px',
+                    TypePromotion:results.attributes.TypePromotion,
+                    Category:results.attributes.Customer[i],
+                    ID:"pinOfferts",
+                    IDpromotion: results.id,
+                    conteo:0,
+                    oferta:"existe",
+                    Our_Favorites:results.attributes.OurFavorite,
+                    PhotoFavorite: results.attributes.PhotoFavorite,
+                    Logo:"",
+                    ColorPin: "silver",
+                    ShopOnline:results.attributes.ShopOnline,
+                    IconShopOnline: "j",
+                    // Display for carrito de frenzy
+                    Display: "",
+                    icon: 'c'
+                });
+            }
           } else {
-              CurrentPromotion.push({
-                  nul:"con",
-                  photo:results.attributes.Photo._url,
-                  name:results.attributes.Name,
-                  presentation:results.attributes.Presentation,
-                  description:results.attributes.PromotionDescription,
-                  basePrice:results.attributes.BasePrice,
-                  promotionalPrice:results.attributes.PromotionalPrice,
-                  ahorro:results.attributes.BasePrice - results.attributes.PromotionalPrice,
-                  Category:results.attributes.Customer[i],
-                  ID:"pinOfferts",
-                  IDpromotion: results.id,
-                  conteo:0,
-                  oferta:"existe",
-                  Our_Favorites:results.attributes.OurFavorite,
-                  PhotoFavorite: results.attributes.PhotoFavorite,
-                  Logo:"",
-                  ColorPin: "silver",
-                  ShopOnline:results.attributes.ShopOnline,
-                  IconShopOnline: "j",
-                  Display: "",
-              });
+
+                if(results.attributes.TypePromotion === 'DirectDiscount'){
+                  var ahorroString = results.attributes.BasePrice - results.attributes.PromotionalPrice;
+                  var basePriceString = results.attributes.BasePrice;
+                  var promotionalPriceString = results.attributes.PromotionalPrice;
+                  ahorroString = ahorroString.toString();
+                  basePriceString = basePriceString.toString();
+                  promotionalPriceString = promotionalPriceString.toString();
+
+                    CurrentPromotion.push({
+                        nul:"con",
+                        name:results.attributes.Name,
+                        photo:results.attributes.Photo._url,
+                        presentation:results.attributes.Presentation,
+                        description:results.attributes.PromotionDescription,
+                        basePrice:'Q'+ basePriceString,
+                        promotionalPrice:'Q'+ promotionalPriceString,
+                        textDiscount: 'Ahorra',
+                        ahorro:'Q'+ ahorroString,
+                        before: 'Antes',
+                        TypePromotion:results.attributes.TypePromotion,
+                        Category:results.attributes.Customer[i],
+                        ID:"pinOfferts",
+                        IDpromotion: results.id,
+                        conteo:0,
+                        oferta:"existe",
+                        Our_Favorites:results.attributes.OurFavorite,
+                        PhotoFavorite: results.attributes.PhotoFavorite,
+                        Logo:"",
+                        ColorPin: "silver",
+                        ShopOnline:results.attributes.ShopOnline,
+                        IconShopOnline: "j",
+                        // Display for carrito de frenzy
+                        Display: "",
+                    });
+              } else if(results.attributes.TypePromotion === 'Percentage'){
+                  CurrentPromotion.push({
+                      nul:"con",
+                      name:results.attributes.Name,
+                      photo:results.attributes.Photo._url,
+                      presentation:results.attributes.Presentation,
+                      description:results.attributes.PromotionDescription,
+                      promotionalPrice:'Descuento Especial',
+                      ahorro:results.attributes.Percentage + '%',
+                      TypePromotion:results.attributes.TypePromotion,
+                      Category:results.attributes.Customer[i],
+                      ID:"pinOfferts",
+                      IDpromotion: results.id,
+                      conteo:0,
+                      oferta:"existe",
+                      Our_Favorites:results.attributes.OurFavorite,
+                      PhotoFavorite: results.attributes.PhotoFavorite,
+                      Logo:"",
+                      ColorPin: "silver",
+                      ShopOnline:results.attributes.ShopOnline,
+                      IconShopOnline: "j",
+                      // Display for carrito de frenzy
+                      Display: "",
+                      Display: "",
+                      marginTop: '3px',
+                      /*textAlign: 'center',*/
+                      marginLeft: '11px',
+                      fontSize: '20px'
+                  });
+              } else if(results.attributes.TypePromotion === 'SpecialPromotion'){
+                  CurrentPromotion.push({
+                      nul:"con",
+                      photo:results.attributes.Photo._url,
+                      name:results.attributes.Name,
+                      presentation:results.attributes.Presentation,
+                      description:results.attributes.PromotionDescription,
+                      display: 'none',
+                      fontSize: '10px',
+                      promotionalPrice:'Promoción Especial',
+                      TypePromotion:results.attributes.TypePromotion,
+                      Category:results.attributes.Customer[i],
+                      ID:"pinOfferts",
+                      IDpromotion: results.id,
+                      conteo:0,
+                      oferta:"existe",
+                      Our_Favorites:results.attributes.OurFavorite,
+                      PhotoFavorite: results.attributes.PhotoFavorite,
+                      Logo:"",
+                      ColorPin: "silver",
+                      ShopOnline:results.attributes.ShopOnline,
+                      IconShopOnline: "j",
+                      // Display for carrito de frenzy
+                      Display: "",
+                  });
+              }
           }
+
+
+
       }
     }).then(function () {
         response.success(CurrentPromotion);
@@ -880,38 +1045,72 @@ Parse.Cloud.define('GetCouponsApp', function(request, response) {
     });
 });
 /* http request for callback CountCouponCustomer by means of job work */
-function CountCouponCustomer(request, response) {
-    Parse.Cloud.httpRequest({
-        url: 'https://api.parse.com/1/jobs/QuantityCouponsForCustomer',
-        headers: {
-            'Content-Type':'application/json',
-            'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
-            'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
-            'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
-        },
-        method: 'POST',
-        body : {}
-    }).then(function(httpResponse) {
-        response.success(httpResponse);
-    }, function(err) {
-        response.error(err);
-    });
-}
+Parse.Cloud.define("CountCouponCustomer", function(request, response) {
+  /* Create query for search Customer */
+  var Customer = new Parse.Query('Customer');
+  /* Create query for search Coupons */
+  var Coupons = new Parse.Query('Cupon');
+
+  var CountCouponsForCustomer = new Parse.Object.extend("Customer");
+  var CountCoupons = new CountCouponsForCustomer();
+
+  Coupons.equalTo("Status",true)
+
+  Customer.each(function (CustomerResults) {
+
+      Coupons.equalTo("Customer", CustomerResults.get('Name'));
+
+      return Coupons.count({
+          success: function(count) {
+              // The count request succeeded. Show the count
+              CountCoupons.id = CustomerResults.id;
+              CountCoupons.set("QuantityCoupon",count);
+
+              return CountCoupons.save();
+          },
+          error: function(error) {
+              // The request failed
+          }
+      })
+  }).then(function() {
+      // Set the job's success status
+      response.success("Count customer completed successfully.");
+  }, function(error) {
+      // Set the job's error status
+      response.error("Uh oh, something went wrong in custmer count.");
+  });
+});
+
 /* http request for callback CountCouponCategories by means of job work */
-function CountCouponCategories(request, response){
-    Parse.Cloud.httpRequest({
-        url: 'https://api.parse.com/1/jobs/QuantityPromotionsForCoupons',
-        headers: {
-            'Content-Type':'application/json',
-            'X-Parse-Application-Id':'ykQ2udK5KrOjB7L7bphLAG4RjTlbDc48LyYpL9za',
-            'X-Parse-REST-API-Key':'h36JtLiNJgN0Yvps0dyqy7Q67yRBWzttWg21FCbQ',
-            'X-Parse-Master-Key':'nXc1CZ6Z7uu295izLy7kVZ7nesVDm3Qf0TsWHgaW'
-        },
-        method: 'POST',
-        body : {}
-    }).then(function(httpResponse) {
-        response.success(httpResponse);
-    }, function(err) {
-        response.error(err);
-    });
-}
+Parse.Cloud.define("CountCouponCategories", function(request, response) {
+  /* Create query for search AppCategory */
+  var Category = new Parse.Query('AppCategory');
+  /* Create query for search Promotions */
+  var Coupons = new Parse.Query('Cupon');
+  Coupons.equalTo("Status",true)
+
+  var CountCouponsEnt = new Parse.Object.extend("AppCategory");
+  var CountCoupons = new CountCouponsEnt();
+  /* Create query for search Cupones */
+
+  Category.each(function (CategoryResults) {
+      Coupons.equalTo("CategoryApp", CategoryResults.get('CategoryName'));
+      return Coupons.count({
+          success: function(count) {
+              // The count request succeeded. Show the count
+              CountCoupons.id = CategoryResults.id;
+              CountCoupons.set("QuantityCoupon",count);
+              return CountCoupons.save();
+          },
+          error: function(error) {
+              // The request failed
+          }
+      })
+  }).then(function() {
+      // Set the job's success status
+      response.success("Count categories completed successfully in categories.");
+  }, function(error) {
+      // Set the job's error status
+      response.error("Uh oh, something went wrong.");
+  });
+});
