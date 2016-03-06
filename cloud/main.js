@@ -736,17 +736,23 @@ Parse.Cloud.job('AverageSavingForCustomer', function(request, status){
         console.log('entra a customer');
         Promotion.equalTo("Customer", CustomerResults.get('Name'));
 
-        var count = 0
+        var PromotionSaveCash = 0
+        var TotalPromo = 0
         return Promotion.each(function(PromotionResults){
-            count = count +  PromotionResults.attributes.PromotionalPrice;
+            // Variable for calculate PromotionalSave
+            PromotionSaveCash =+ (PromotionResults.attributes.BasePrice - PromotionResults.attributes.PromotionalPrice)
+            // Variable for calculate the AverageSaving for Customer with PromotionalSave
+            TotalPromo = TotalPromo +PromotionSaveCash/CustomerResults.attributes.QuantityPromotion
         }).then(function() {
             AverageSave.id = CustomerResults.id;
-            var Promos = count/CustomerResults.attributes.QuantityPromotion;
-            var countTwoDecimals = Promos.toFixed(2);
-            if (Promos) {
-              AverageSave.set("AverageSaving", parseFloat(countTwoDecimals));
+            // Variable for to convert integer number to float number
+            var CountTwoDecimalsSave = TotalPromo.toFixed(2);
+            if (TotalPromo) {
+              // For to save AverageSaving into Customer Entity
+              AverageSave.set("AverageSaving", parseFloat(CountTwoDecimalsSave));
               return AverageSave.save();
             } else {
+              // If doesn't exist Promotion then AverageSaving is 0
               AverageSave.set("AverageSaving", 0);
               return AverageSave.save();
             };
